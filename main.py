@@ -141,39 +141,48 @@ async def join(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def start(ctx):
+async def shop(ctx):
     if not game_active:
         await ctx.send("No active game! Use `.startgame` first.")
         return
     if ctx.author != host:
-        await ctx.send("Only the host can start the game!")
+        await ctx.send("Only the host can access the shop!")
         return
     
     embed = discord.Embed(
-        title="Game Menu",
-        description="Choose an action:",
-        color=discord.Color.blue()
+        title="Shop Menu",
+        description="Choose a category:",
+        color=discord.Color.purple()
     )
-    embed.add_field(name="1️⃣ Start", value="Begin the adventure.", inline=False)
-    embed.add_field(name="2️⃣ Shop (SOON)", value="Access the shop (Coming soon).", inline=False)
-    embed.add_field(name="3️⃣ Inventory", value="View inventory (Choose player).", inline=False)
+    embed.add_field(name="1️⃣ Weapons", value="Browse weapons.", inline=False)
+    embed.add_field(name="2️⃣ Armors", value="Browse armors.", inline=False)
+    embed.add_field(name="3️⃣ Potions", value="Browse potions.", inline=False)
+    embed.add_field(name="4️⃣ Back/Exit", value="Return to the game menu.", inline=False)
     message = await ctx.send(embed=embed)
     
-    reactions = ["1️⃣", "2️⃣", "3️⃣"]
+    reactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
     for reaction in reactions:
         await message.add_reaction(reaction)
 
 @bot.command()
-async def forfeit(ctx):
-    global game_active, host
+async def endgame(ctx):
+    global game_active, team, host
+    if not game_active:
+        await ctx.send("There is no active game to end.")
+        return
+    if ctx.author != host:
+        await ctx.send("Only the host can end the game!")
+        return
+    
     game_active = False
     team.clear()
     host = None
     embed = discord.Embed(
-        title="Game Forfeited",
-        description="The current game session has ended.",
+        title="Game Ended",
+        description="The game session has been concluded.",
         color=discord.Color.red()
     )
     await ctx.send(embed=embed)
+
 
 bot.run(TOKEN)
