@@ -242,6 +242,25 @@ async def shop(ctx):
             await message.delete()
             return
 
+@bot.command()
+async def endgame(ctx):
+    global game_active, team, host
+    if not game_active:
+        await ctx.send("There is no active game to end.")
+        return
+    if ctx.author != host:
+        await ctx.send("Only the host can end the game!")
+        return
+    
+    game_active = False
+    team.clear()
+    host = None
+    embed = discord.Embed(
+        title="Game Ended",
+        description="The game session has been concluded.",
+        color=discord.Color.red()
+    )
+    await ctx.send(embed=embed)
 
 
 bot.run(TOKEN)
