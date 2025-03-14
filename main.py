@@ -7,7 +7,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 WELCOME_CHANNEL_ID = int(os.getenv('WELCOME_CHANNEL_ID', 0))
 RULES_CHANNEL_ID = int(os.getenv('RULES_CHANNEL_ID', 0))
-HEARTBEAT_CHANNEL_ID = int(os.getenv('HEARTBEAT_CHANNEL_ID', 0))  # Add this to your .env file
+HEARTBEAT_CHANNEL_ID = int(os.getenv('HEARTBEAT_CHANNEL_ID', 0))
 
 intents = discord.Intents.default()
 intents.members = True
@@ -27,14 +27,14 @@ async def heartbeat_task():
 
     while not bot.is_closed():
         await channel.send("💓 Heartbeat: Bot is still alive!")
-        await asyncio.sleep(900)  # 900 seconds = 15 minutes OR change to 1500 for 25 minutes
+        await asyncio.sleep(900)
 
 # ---------------- Events & Commands ----------------
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}!")
-    bot.loop.create_task(heartbeat_task())  # Start the heartbeat task
+    bot.loop.create_task(heartbeat_task())
 
 @bot.event
 async def on_member_join(member):
@@ -129,6 +129,27 @@ async def startgame(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def start(ctx):
+    if not game_active:
+        await ctx.send("No active game! Use `.startgame` first.")
+        return
+
+    embed = discord.Embed(
+        title="Game Menu",
+        description="Choose an option:",
+        color=discord.Color.blue()
+    )
+    embed.add_field(name="1️⃣ Start", value="Begin your adventure!", inline=False)
+    embed.add_field(name="2️⃣ Shop (SOON)", value="Buy equipment (Coming Soon).", inline=False)
+    embed.add_field(name="3️⃣ Inventory", value="Check your items.", inline=False)
+
+    message = await ctx.send(embed=embed)
+
+    reactions = ["1️⃣", "2️⃣", "3️⃣"]
+    for reaction in reactions:
+        await message.add_reaction(reaction)
+
+@bot.command()
 async def join(ctx):
     if ctx.author.name not in team:
         team.append(ctx.author.name)
@@ -163,26 +184,5 @@ async def shop(ctx):
     reactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
     for reaction in reactions:
         await message.add_reaction(reaction)
-
-@bot.command()
-async def endgame(ctx):
-    global game_active, team, host
-    if not game_active:
-        await ctx.send("There is no active game to end.")
-        return
-    if ctx.author != host:
-        await ctx.send("Only the host can end the game!")
-        return
-    
-    game_active = False
-    team.clear()
-    host = None
-    embed = discord.Embed(
-        title="Game Ended",
-        description="The game session has been concluded.",
-        color=discord.Color.red()
-    )
-    await ctx.send(embed=embed)
-
 
 bot.run(TOKEN)
