@@ -7,6 +7,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 WELCOME_CHANNEL_ID = int(os.getenv('WELCOME_CHANNEL_ID', 0))
 RULES_CHANNEL_ID = int(os.getenv('RULES_CHANNEL_ID', 0))
+HEARTBEAT_CHANNEL_ID = int(os.getenv('HEARTBEAT_CHANNEL_ID', 0))  # Add this to your .env file
 
 intents = discord.Intents.default()
 intents.members = True
@@ -14,11 +15,26 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
-# ---------------- Commands ----------------
+# ---------------- Heartbeat Task ----------------
+
+async def heartbeat_task():
+    await bot.wait_until_ready()
+    channel = bot.get_channel(HEARTBEAT_CHANNEL_ID)
+
+    if not channel:
+        print("Heartbeat channel not found. Check HEARTBEAT_CHANNEL_ID in .env.")
+        return
+
+    while not bot.is_closed():
+        await channel.send("💓 Heartbeat: Bot is still alive!")
+        await asyncio.sleep(900)  # 900 seconds = 15 minutes OR change to 1500 for 25 minutes
+
+# ---------------- Events & Commands ----------------
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}!")
+    bot.loop.create_task(heartbeat_task())  # Start the heartbeat task
 
 @bot.event
 async def on_member_join(member):
