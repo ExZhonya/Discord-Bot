@@ -107,14 +107,19 @@ async def info(ctx):
 
 # ---------------- Game System ----------------
 
+game_active = False
 team = []
+host = None
 
 def team_members():
     return ", ".join(team) if team else "No members yet."
 
 @bot.command()
 async def startgame(ctx):
+    global game_active, host
     team.clear()
+    game_active = True
+    host = ctx.author
     embed = discord.Embed(
         title="Game Started!",
         description="A new game session has begun. Use `.join` to participate!",
@@ -136,8 +141,34 @@ async def join(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def start(ctx):
+    if not game_active:
+        await ctx.send("No active game! Use `.startgame` first.")
+        return
+    if ctx.author != host:
+        await ctx.send("Only the host can start the game!")
+        return
+    
+    embed = discord.Embed(
+        title="Game Menu",
+        description="Choose an action:",
+        color=discord.Color.blue()
+    )
+    embed.add_field(name="1️⃣ Start", value="Begin the adventure.", inline=False)
+    embed.add_field(name="2️⃣ Shop (SOON)", value="Access the shop (Coming soon).", inline=False)
+    embed.add_field(name="3️⃣ Inventory", value="View inventory (Choose player).", inline=False)
+    message = await ctx.send(embed=embed)
+    
+    reactions = ["1️⃣", "2️⃣", "3️⃣"]
+    for reaction in reactions:
+        await message.add_reaction(reaction)
+
+@bot.command()
 async def forfeit(ctx):
+    global game_active, host
+    game_active = False
     team.clear()
+    host = None
     embed = discord.Embed(
         title="Game Forfeited",
         description="The current game session has ended.",
