@@ -140,7 +140,7 @@ async def start(ctx):
         color=discord.Color.blue()
     )
     embed.add_field(name="1️⃣ Start", value="Begin your adventure!", inline=False)
-    embed.add_field(name="2️⃣ Shop (SOON)", value="Buy equipment (Coming Soon).", inline=False)
+    embed.add_field(name="2️⃣ Shop", value="Buy equipment.", inline=False)
     embed.add_field(name="3️⃣ Inventory", value="Check your items.", inline=False)
 
     message = await ctx.send(embed=embed)
@@ -148,6 +148,17 @@ async def start(ctx):
     reactions = ["1️⃣", "2️⃣", "3️⃣"]
     for reaction in reactions:
         await message.add_reaction(reaction)
+
+    def check(reaction, user):
+        return user == host and str(reaction.emoji) in reactions
+
+    try:
+        reaction, user = await bot.wait_for("reaction_add", timeout=60.0, check=check)
+
+        if str(reaction.emoji) == "2️⃣":
+            await shop(ctx)
+    except asyncio.TimeoutError:
+        await ctx.send("Game menu timed out.")
 
 @bot.command()
 async def join(ctx):
@@ -163,13 +174,6 @@ async def join(ctx):
 
 @bot.command()
 async def shop(ctx):
-    if not game_active:
-        await ctx.send("No active game! Use `.startgame` first.")
-        return
-    if ctx.author != host:
-        await ctx.send("Only the host can access the shop!")
-        return
-    
     embed = discord.Embed(
         title="Shop Menu",
         description="Choose a category:",
