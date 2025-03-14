@@ -175,6 +175,9 @@ async def join(ctx):
 @bot.command()
 async def shop(ctx):
     global host
+
+    async def update_shop_menu(message, embed):
+        await message.edit(embed=embed)
     
     embed = discord.Embed(
         title="Shop Menu",
@@ -185,8 +188,9 @@ async def shop(ctx):
     embed.add_field(name="2️⃣ Armors", value="Browse armors.", inline=False)
     embed.add_field(name="3️⃣ Potions", value="Browse potions.", inline=False)
     embed.add_field(name="4️⃣ Back/Exit", value="Return to the game menu.", inline=False)
+
     message = await ctx.send(embed=embed)
-    
+
     reactions = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
     for reaction in reactions:
         await message.add_reaction(reaction)
@@ -194,35 +198,51 @@ async def shop(ctx):
     def check(reaction, user):
         return user == host and str(reaction.emoji) in reactions
 
-    try:
-        reaction, user = await bot.wait_for("reaction_add", timeout=60.0, check=check)
-        
-        if str(reaction.emoji) == "1️⃣":
-            weapons_embed = discord.Embed(
-                title="Weapons Shop",
-                description="Available weapons:\n\n⚔️ Sword - 100g\n🏹 Bow - 150g\n🔨 Hammer - 200g",
-                color=discord.Color.dark_gold()
-            )
-            await ctx.send(embed=weapons_embed)
-        elif str(reaction.emoji) == "2️⃣":
-            armors_embed = discord.Embed(
-                title="Armor Shop",
-                description="Available armor:\n\n🛡️ Chainmail - 200g\n🧥 Leather Armor - 150g\n👑 Helmet - 100g",
-                color=discord.Color.dark_gold()
-            )
-            await ctx.send(embed=armors_embed)
-        elif str(reaction.emoji) == "3️⃣":
-            potions_embed = discord.Embed(
-                title="Potion Shop",
-                description="Available potions:\n\n❤️ Health Potion - 50g\n🌀 Mana Potion - 75g\n⚡ Stamina Potion - 60g",
-                color=discord.Color.dark_gold()
-            )
-            await ctx.send(embed=potions_embed)
-        elif str(reaction.emoji) == "4️⃣":
-            await ctx.send("Returning to game menu...")
-            await start(ctx)
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60.0, check=check)
 
-    except asyncio.TimeoutError:
-        await ctx.send("Shop menu timed out.")
+            if str(reaction.emoji) == "1️⃣":
+                weapons_embed = discord.Embed(
+                    title="Weapons Shop",
+                    description="Available weapons:\n\n⚔️ Sword - 100g\n🏹 Bow - 150g\n🔨 Hammer - 200g\n\n🔙 Back",
+                    color=discord.Color.dark_gold()
+                )
+                await update_shop_menu(message, weapons_embed)
+            elif str(reaction.emoji) == "2️⃣":
+                armors_embed = discord.Embed(
+                    title="Armor Shop",
+                    description="Available armor:\n\n🛡️ Chainmail - 200g\n🧥 Leather Armor - 150g\n👑 Helmet - 100g\n\n🔙 Back",
+                    color=discord.Color.dark_gold()
+                )
+                await update_shop_menu(message, armors_embed)
+            elif str(reaction.emoji) == "3️⃣":
+                potions_embed = discord.Embed(
+                    title="Potion Shop",
+                    description="Available potions:\n\n❤️ Health Potion - 50g\n🌀 Mana Potion - 75g\n⚡ Stamina Potion - 60g\n\n🔙 Back",
+                    color=discord.Color.dark_gold()
+                )
+                await update_shop_menu(message, potions_embed)
+            elif str(reaction.emoji) == "4️⃣":
+                await message.delete()
+                await start(ctx)
+                return
+            
+            # Add a back reaction when in submenus
+            await message.clear_reactions()
+            await message.add_reaction("🔙")
+
+            def back_check(reaction, user):
+                return user == host and str(reaction.emoji) == "🔙"
+
+            await bot.wait_for("reaction_add", timeout=60.0, check=back_check)
+            await update_shop_menu(message, embed)
+            for reaction in reactions:
+                await message.add_reaction(reaction)
+
+        except asyncio.TimeoutError:
+            await message.delete()
+            return
+
 
 bot.run(TOKEN)
