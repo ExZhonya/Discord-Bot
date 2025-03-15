@@ -118,15 +118,44 @@ def team_members():
 @bot.command()
 async def startgame(ctx):
     global game_active, host
+    if game_active:
+        await ctx.send("A game is already active!")
+        return
+    
     team.clear()
     game_active = True
-    host = ctx.author
+    host = ctx.author.name  # Save the host's name
+    
     embed = discord.Embed(
         title="Game Started!",
         description="A new game session has begun. Use `.join` to participate!",
         color=discord.Color.gold()
     )
     embed.add_field(name="Current Team Members", value=team_members(), inline=False)
+    
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def join(ctx):
+    global game_active
+    if not game_active:
+        await ctx.send("No active game! Use `.startgame` first.")
+        return
+    
+    player_name = ctx.author.name  # Get the player's name
+    if player_name in team:
+        await ctx.send(f"{player_name}, you are already in the team!")
+        return
+    
+    team.append(player_name)  # Add player to the team list
+
+    embed = discord.Embed(
+        title="New Player Joined!",
+        description=f"{player_name} has joined the adventure! 🎉",
+        color=discord.Color.green()
+    )
+    embed.add_field(name="Current Team Members", value=team_members(), inline=False)
+
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -148,8 +177,8 @@ async def start(ctx):
 
         @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
         async def shop_button(self, interaction: discord.Interaction, button: Button):
-            await interaction.message.delete()  # Delete previous game menu message
-            await shop(ctx)  # Open shop
+            await interaction.message.delete()
+            await shop(ctx)
 
         @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
         async def inventory_button(self, interaction: discord.Interaction, button: Button):
@@ -195,8 +224,8 @@ async def shop(ctx):
         
         @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
         async def back_button(self, interaction: discord.Interaction, button: Button):
-            await interaction.message.delete()  # Delete the shop menu message
-            await start(ctx)  # Return to game menu
+            await interaction.message.delete()
+            await start(ctx)
     
     await ctx.send(embed=embed, view=ShopMenu())
 
@@ -206,7 +235,7 @@ async def endgame(ctx):
     if not game_active:
         await ctx.send("There is no active game to end.")
         return
-    if ctx.author != host:
+    if ctx.author.name != host:
         await ctx.send("Only the host can end the game!")
         return
     
