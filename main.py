@@ -173,21 +173,30 @@ async def start(ctx):
     class GameMenu(View):
         @discord.ui.button(label="Start", style=discord.ButtonStyle.green)
         async def start_button(self, interaction: discord.Interaction, button: Button):
-            await interaction.response.send_message("Adventure begins!")
+            if interaction.user.name != host:  # Check if the user is the host
+                await interaction.response.send_message("Only the game host can start!", ephemeral=True)
+                return
+            await interaction.response.send_message("Adventure begins!(not really)")
 
         @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
         async def shop_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
+                return
             await interaction.message.delete()
-            await shop(ctx)
+            await shop(interaction)  # Pass interaction instead of ctx
 
         @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
         async def inventory_button(self, interaction: discord.Interaction, button: Button):
-            await interaction.response.send_message("You checked your inventory!")
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
+                return
+            await interaction.response.send_message("ni- what are you checking? YOU'RE BROKE ASF")
 
     view = GameMenu()
     await ctx.send(embed=embed, view=view)
 
-async def shop(ctx):
+async def shop(interaction):
     embed = discord.Embed(
         title="Shop Menu",
         description="Choose a category:",
@@ -197,6 +206,9 @@ async def shop(ctx):
     class ShopMenu(View):
         @discord.ui.button(label="Weapons", style=discord.ButtonStyle.primary)
         async def weapons_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can interact!", ephemeral=True)
+                return
             weapons_embed = discord.Embed(
                 title="Weapons Shop",
                 description="⚔️ Sword - 100g\n🏹 Bow - 150g\n🔨 Hammer - 200g",
@@ -206,6 +218,9 @@ async def shop(ctx):
         
         @discord.ui.button(label="Armors", style=discord.ButtonStyle.primary)
         async def armors_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can interact!", ephemeral=True)
+                return
             armors_embed = discord.Embed(
                 title="Armor Shop",
                 description="🛡️ Chainmail - 200g\n🧥 Leather Armor - 150g\n👑 Helmet - 100g",
@@ -215,6 +230,9 @@ async def shop(ctx):
         
         @discord.ui.button(label="Potions", style=discord.ButtonStyle.primary)
         async def potions_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can interact!", ephemeral=True)
+                return
             potions_embed = discord.Embed(
                 title="Potion Shop",
                 description="❤️ Health Potion - 50g\n🌀 Mana Potion - 75g\n⚡ Stamina Potion - 60g",
@@ -224,10 +242,13 @@ async def shop(ctx):
         
         @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
         async def back_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can interact!", ephemeral=True)
+                return
             await interaction.message.delete()
-            await start(ctx)
-    
-    await ctx.send(embed=embed, view=ShopMenu())
+            await start(interaction)  # Pass interaction
+
+    await interaction.response.send_message(embed=embed, view=ShopMenu(), ephemeral=False)
 
 @bot.command()
 async def endgame(ctx):
