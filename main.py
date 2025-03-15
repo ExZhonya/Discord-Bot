@@ -115,23 +115,6 @@ host = None
 def team_members():
     return ", ".join(team) if team else "No members yet."
 
-class GameMenu(View):
-    def __init__(self, ctx):
-        super().__init__()
-        self.ctx = ctx
-
-    @discord.ui.button(label="Start", style=discord.ButtonStyle.green)
-    async def start_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.send_message("Adventure begins!")
-
-    @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
-    async def shop_button(self, interaction: discord.Interaction, button: Button):
-        await shop(self.ctx)
-
-    @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
-    async def inventory_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.send_message("You checked your inventory!")
-
 @bot.command()
 async def startgame(ctx):
     global game_active, host
@@ -151,75 +134,71 @@ async def start(ctx):
     if not game_active:
         await ctx.send("No active game! Use `.startgame` first.")
         return
-
+    
     embed = discord.Embed(
         title="Game Menu",
         description="Choose an option:",
         color=discord.Color.blue()
     )
-    await ctx.send(embed=embed, view=GameMenu(ctx))
+    
+    class GameMenu(View):
+        @discord.ui.button(label="Start", style=discord.ButtonStyle.green)
+        async def start_button(self, interaction: discord.Interaction, button: Button):
+            await interaction.response.send_message("Adventure begins!")
 
-@bot.command()
-async def join(ctx):
-    if ctx.author.name not in team:
-        team.append(ctx.author.name)
-    embed = discord.Embed(
-        title="Player Joined!",
-        description=f"{ctx.author.mention} has joined the game!",
-        color=discord.Color.green()
-    )
-    embed.add_field(name="Current Team Members", value=team_members(), inline=False)
-    await ctx.send(embed=embed)
+        @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
+        async def shop_button(self, interaction: discord.Interaction, button: Button):
+            await interaction.message.delete()  # Delete previous game menu message
+            await shop(ctx)  # Open shop
 
-class ShopMenu(View):
-    def __init__(self, ctx):
-        super().__init__()
-        self.ctx = ctx
+        @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
+        async def inventory_button(self, interaction: discord.Interaction, button: Button):
+            await interaction.response.send_message("You checked your inventory!")
 
-    @discord.ui.button(label="Weapons", style=discord.ButtonStyle.primary)
-    async def weapons_button(self, interaction: discord.Interaction, button: Button):
-        weapons_embed = discord.Embed(
-            title="Weapons Shop",
-            description="⚔️ Sword - 100g\n🏹 Bow - 150g\n🔨 Hammer - 200g",
-            color=discord.Color.dark_gold()
-        )
-        await interaction.response.edit_message(embed=weapons_embed, view=self)
+    view = GameMenu()
+    await ctx.send(embed=embed, view=view)
 
-    @discord.ui.button(label="Armors", style=discord.ButtonStyle.primary)
-    async def armors_button(self, interaction: discord.Interaction, button: Button):
-        armors_embed = discord.Embed(
-            title="Armor Shop",
-            description="🛡️ Chainmail - 200g\n🧥 Leather Armor - 150g\n👑 Helmet - 100g",
-            color=discord.Color.dark_gold()
-        )
-        await interaction.response.edit_message(embed=armors_embed, view=self)
-
-    @discord.ui.button(label="Potions", style=discord.ButtonStyle.primary)
-    async def potions_button(self, interaction: discord.Interaction, button: Button):
-        potions_embed = discord.Embed(
-            title="Potion Shop",
-            description="❤️ Health Potion - 50g\n🌀 Mana Potion - 75g\n⚡ Stamina Potion - 60g",
-            color=discord.Color.dark_gold()
-        )
-        await interaction.response.edit_message(embed=potions_embed, view=self)
-
-    @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
-    async def back_button(self, interaction: discord.Interaction, button: Button):
-        shop_embed = discord.Embed(
-            title="Shop Menu",
-            description="Choose a category:",
-            color=discord.Color.purple()
-        )
-        await interaction.response.edit_message(embed=shop_embed, view=self)
-
-@bot.command()
 async def shop(ctx):
     embed = discord.Embed(
         title="Shop Menu",
         description="Choose a category:",
         color=discord.Color.purple()
     )
-    await ctx.send(embed=embed, view=ShopMenu(ctx))
+    
+    class ShopMenu(View):
+        @discord.ui.button(label="Weapons", style=discord.ButtonStyle.primary)
+        async def weapons_button(self, interaction: discord.Interaction, button: Button):
+            weapons_embed = discord.Embed(
+                title="Weapons Shop",
+                description="⚔️ Sword - 100g\n🏹 Bow - 150g\n🔨 Hammer - 200g",
+                color=discord.Color.dark_gold()
+            )
+            await interaction.response.edit_message(embed=weapons_embed, view=self)
+        
+        @discord.ui.button(label="Armors", style=discord.ButtonStyle.primary)
+        async def armors_button(self, interaction: discord.Interaction, button: Button):
+            armors_embed = discord.Embed(
+                title="Armor Shop",
+                description="🛡️ Chainmail - 200g\n🧥 Leather Armor - 150g\n👑 Helmet - 100g",
+                color=discord.Color.dark_gold()
+            )
+            await interaction.response.edit_message(embed=armors_embed, view=self)
+        
+        @discord.ui.button(label="Potions", style=discord.ButtonStyle.primary)
+        async def potions_button(self, interaction: discord.Interaction, button: Button):
+            potions_embed = discord.Embed(
+                title="Potion Shop",
+                description="❤️ Health Potion - 50g\n🌀 Mana Potion - 75g\n⚡ Stamina Potion - 60g",
+                color=discord.Color.dark_gold()
+            )
+            await interaction.response.edit_message(embed=potions_embed, view=self)
+        
+        @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
+        async def back_button(self, interaction: discord.Interaction, button: Button):
+            await interaction.message.delete()  # Delete the shop menu message
+            await start(ctx)  # Return to game menu
+    
+    await ctx.send(embed=embed, view=ShopMenu())
 
 @bot.command()
 async def endgame(ctx):
@@ -230,7 +209,7 @@ async def endgame(ctx):
     if ctx.author != host:
         await ctx.send("Only the host can end the game!")
         return
-
+    
     game_active = False
     team.clear()
     host = None
