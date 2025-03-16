@@ -125,9 +125,9 @@ async def on_member_join(member):
             current_time = datetime.utcnow().strftime("%I:%M %p")
 
             # Show plain text if channels are not set
-            rules_text = f"📜 Read the rules in <#{rules_channel_id}>" if rules_channel_id else "📜 Read the rules in the rules channel."
-            roles_text = f"🎭 Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "🎭 Get yourself a role in the roles channel."
-            intro_text = f"📢 Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "📢 Introduce yourself in the introduction channel."
+            rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "📜 Read the rules in the rules channel."
+            roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "🎭 Get yourself a role in the roles channel."
+            intro_text = f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "📢 Introduce yourself in the introduction channel."
 
             # Embed Setup
             embed = discord.Embed(
@@ -176,9 +176,9 @@ async def previewwelcome(ctx):
     current_time = datetime.utcnow().strftime("%I:%M %p")
 
     # Show plain text if channels are not set
-    rules_text = f"📜 Read the rules in <#{rules_channel_id}>" if rules_channel_id else "📜 Read the rules in the rules channel."
-    roles_text = f"🎭 Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "🎭 Get yourself a role in the roles channel."
-    intro_text = f"📢 Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "📢 Introduce yourself in the introduction channel."
+    rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "📜 Read the rules in the rules channel."
+    roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "🎭 Get yourself a role in the roles channel."
+    intro_text = f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "📢 Introduce yourself in the introduction channel."
 
     # Embed Setup
     embed = discord.Embed(
@@ -187,9 +187,7 @@ async def previewwelcome(ctx):
                     f"`Welcome to {guild.name}`\n\n"
                     f"{rules_text}\n\n"
                     f"{roles_text}\n\n"
-                    f"{intro_text}\n\n"
-                    "**Start having fun!** 🎉\n\n"
-                    "Enjoy your stay! If you have any questions, feel free to ask.",
+                    f"{intro_text}\n\n",
         color=discord.Color.green()
     )
 
