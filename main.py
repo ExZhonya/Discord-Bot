@@ -111,18 +111,9 @@ async def info(ctx):
 game_active = False
 team = []
 host = None
-player_inventory = {}  # Stores player inventories
 
 def team_members():
-    return "\n".join(f"{idx + 1}. {name}" for idx, name in enumerate(team)) if team else "No members yet."
-
-def generate_inventory(player_name):
-    """Creates a default inventory for a new player."""
-    player_inventory[player_name] = {
-        "Weapon": None,
-        "Armor": None,
-        "Potion": None
-    }
+    return "\n".join(f"{i + 1}. {name}" for i, name in enumerate(team)) if team else "No members yet."
 
 @bot.command()
 async def startgame(ctx):
@@ -130,39 +121,37 @@ async def startgame(ctx):
     if game_active:
         await ctx.send("A game is already active!")
         return
-    
-    team.clear()
-    player_inventory.clear()
+
+    team.clear()  # Reset team before starting
     game_active = True
     host = ctx.author.name  # Save the host's name
-    
+    team.append(host)  # Automatically add host to the team
+
     embed = discord.Embed(
-        title="Game Started!",
+        title="Game Started! 🎮",
         description="A new game session has begun. Use `.join` to participate!",
         color=discord.Color.gold()
     )
     embed.add_field(name="Current Team Members", value=team_members(), inline=False)
-    
+
     await ctx.send(embed=embed)
 
 @bot.command()
 async def join(ctx):
-    global game_active
     if not game_active:
         await ctx.send("No active game! Use `.startgame` first.")
         return
-    
-    player_name = ctx.author.name  # Get the player's name
+
+    player_name = ctx.author.name
     if player_name in team:
         await ctx.send(f"{player_name}, you are already in the team!")
         return
-    
-    team.append(player_name)  # Add player to the team list
-    generate_inventory(player_name)  # Create an inventory for the player
+
+    team.append(player_name)
 
     embed = discord.Embed(
-        title="New Player Joined!",
-        description=f"{player_name} has joined the adventure! 🎉",
+        title="New Player Joined! 🎉",
+        description=f"{player_name} has joined the adventure!",
         color=discord.Color.green()
     )
     embed.add_field(name="Current Team Members", value=team_members(), inline=False)
@@ -170,37 +159,110 @@ async def join(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def inventory(ctx, member: discord.Member = None):
-    """Check a player's inventory."""
-    player_name = member.name if member else ctx.author.name  # Get the target player's name
-    
-    if player_name not in player_inventory:
-        await ctx.send(f"{player_name} has no inventory yet. Use `.join` first!")
+async def inventory(ctx):
+    if not team:
+        await ctx.send("No players in the game!")
         return
-    
-    inventory = player_inventory[player_name]
-    inventory_text = "\n".join(f"{key}: {value if value else 'Empty'}" for key, value in inventory.items())
 
-    embed = discord.Embed(
-        title=f"{player_name}'s Inventory",
-        description=inventory_text,
-        color=discord.Color.blue()
-    )
+    embed = discord.Embed(title="Inventory List", color=discord.Color.blue())
+
+    for i, player in enumerate(team, start=1):
+        embed.add_field(
+            name=f"{i}. {player}",
+            value="**Weapon:** None\n**Armor:** None\n**Potion:** None",
+            inline=False
+        )
+
     await ctx.send(embed=embed)
 
 @bot.command()
+async def start(ctx):
+    if not game_active:
+        await ctx.send("No active game! Use `.startgame` first.")
+        return
+
+    embed = discord.Embed(
+        title="Game Menu",
+        description="Choose an option:",
+        color=discord.Color.blue()
+    )
+
+    class GameMenu(View):
+        @discord.ui.button(label="Start", style=discord.ButtonStyle.green)
+        async def start_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the game host can start!", ephemeral=True)
+                return
+            await interaction.response.send_message("Adventure begins!")
+
+        @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
+        async def shop_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
+                return
+            await interaction.message.delete()
+            await shop(interaction)
+
+        @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
+        async def inventory_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
+                return
+            await inventory(ctx)
+
+    await ctx.send(embed=embed, view=GameMenu())
+
+async def shop(interaction):
+    embed = discord.Embed(
+        title="Shop Menu",
+        description="Choose a category:",
+        color=discord.Color.purple()
+    )
+
+    class ShopMenu(View):
+        @discord.ui.button(label="Weapons", style=discord.ButtonStyle.primary)
+        async def weapons_button(self, interaction: discord.Interaction, button: Button):
+            await interaction.response.edit_message(embed=discord.Embed(
+                title="Weapons Shop",
+                description="⚔️ Sword - 100g\n🏹 Bow - 150g\n🔨 Hammer - 200g",
+                color=discord.Color.dark_gold()
+            ), view=self)
+
+        @discord.ui.button(label="Armors", style=discord.ButtonStyle.primary)
+        async def armors_button(self, interaction: discord.Interaction, button: Button):
+            await interaction.response.edit_message(embed=discord.Embed(
+                title="Armor Shop",
+                description="🛡️ Chainmail - 200g\n🧥 Leather Armor - 150g\n👑 Helmet - 100g",
+                color=discord.Color.dark_gold()
+            ), view=self)
+
+        @discord.ui.button(label="Potions", style=discord.ButtonStyle.primary)
+        async def potions_button(self, interaction: discord.Interaction, button: Button):
+            await interaction.response.edit_message(embed=discord.Embed(
+                title="Potion Shop",
+                description="❤️ Health Potion - 50g\n🌀 Mana Potion - 75g\n⚡ Stamina Potion - 60g",
+                color=discord.Color.dark_gold()
+            ), view=self)
+
+        @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
+        async def back_button(self, interaction: discord.Interaction, button: Button):
+            await interaction.message.delete()
+            await start(interaction)
+
+    await interaction.response.send_message(embed=embed, view=ShopMenu(), ephemeral=False)
+
+@bot.command()
 async def endgame(ctx):
-    global game_active, team, host, player_inventory
+    global game_active, team, host
     if not game_active:
         await ctx.send("There is no active game to end.")
         return
     if ctx.author.name != host:
         await ctx.send("Only the host can end the game!")
         return
-    
+
     game_active = False
     team.clear()
-    player_inventory.clear()
     host = None
     embed = discord.Embed(
         title="Game Ended",
