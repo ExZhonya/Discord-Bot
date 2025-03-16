@@ -62,6 +62,7 @@ async def heartbeat_task():
 @bot.event
 async def on_ready():
     await init_db()
+    await bot.tree.sync()
     print(f"✅ Logged in as {bot.user}!")
     bot.loop.create_task(heartbeat_task())
     update_status.start()  # Start auto-updating status
