@@ -125,9 +125,9 @@ async def on_member_join(member):
             current_time = datetime.utcnow().strftime("%I:%M %p")
 
             # Show plain text if channels are not set
-            rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "📜 Read the rules in the rules channel."
-            roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "🎭 Get yourself a role in the roles channel."
-            intro_text = f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "📢 Introduce yourself in the introduction channel."
+            rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "<a:exclamation:1350752095720177684> Read the rules in the rules channel."
+            roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "<a:exclamation:1350752095720177684> Get yourself a role in the roles channel."
+            intro_text = f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "<a:exclamation:1350752095720177684> Introduce yourself in the introduction channel."
 
             # Embed Setup
             embed = discord.Embed(
@@ -158,6 +158,10 @@ async def on_member_join(member):
 
 @bot.command()
 async def previewwelcome(ctx):
+    if not ctx.author.guild_permissions.manage_guild:
+        await ctx.send("You need the 'Manage Server' permission to use this command!")
+        return
+    
     """Sends a preview of the welcome message for testing."""
     guild = ctx.guild
     guild_id = guild.id
@@ -239,6 +243,10 @@ async def remove_channel_id(guild_id, column_name):
 
 @bot.command()
 async def rules(ctx):
+    if not ctx.author.guild_permissions.manage_guild:
+        await ctx.send("You need the 'Manage Server' permission to use this command!")
+        return
+    
     rules_channel_id = await get_channel_id(ctx.guild.id, "rules_channel")
     if ctx.channel.id == rules_channel_id:
         embed = discord.Embed(
