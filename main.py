@@ -70,6 +70,8 @@ async def help(ctx):
     embed.add_field(name=".help", value="Displays this help menu.", inline=False)
     embed.add_field(name=".ping", value="Checks the bot's latency.", inline=False)
     embed.add_field(name=".info", value="Provides server information.", inline=False)
+    embed.add_field(name=".gamehelp", value="List of Game's commands.", inline=False)
+    embed.add_field(name=".setchannel", value="(Admin) Set welcome, rules, or heartbeat channels.", inline=False)
     await ctx.send(embed=embed)
 
 bot.command()
