@@ -180,9 +180,9 @@ async def previewwelcome(ctx):
     current_time = datetime.utcnow().strftime("%I:%M %p")
 
     # Show plain text if channels are not set
-    rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "📜 Read the rules in the rules channel."
-    roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "🎭 Get yourself a role in the roles channel."
-    intro_text = f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "📢 Introduce yourself in the introduction channel."
+    rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "<a:exclamation:1350752095720177684> Read the rules in the rules channel."
+    roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "<a:exclamation:1350752095720177684> Get yourself a role in the roles channel."
+    intro_text = f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "<a:exclamation:1350752095720177684> Introduce yourself in the introduction channel."
 
     # Embed Setup
     embed = discord.Embed(
