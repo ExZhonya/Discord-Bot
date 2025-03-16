@@ -159,23 +159,6 @@ async def join(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def inventory(ctx):
-    if not team:
-        await ctx.send("No players in the game!")
-        return
-
-    embed = discord.Embed(title="Inventory List", color=discord.Color.blue())
-
-    for i, player in enumerate(team, start=1):
-        embed.add_field(
-            name=f"{i}. {player}",
-            value="**Weapon:** None\n**Armor:** None\n**Potion:** None",
-            inline=False
-        )
-
-    await ctx.send(embed=embed)
-
-@bot.command()
 async def start(ctx):
     if not game_active:
         await ctx.send("No active game! Use `.startgame` first.")
@@ -200,19 +183,35 @@ async def start(ctx):
             if interaction.user.name != host:
                 await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
                 return
-            await interaction.message.delete()
-            await shop(interaction)
+            await show_shop(interaction)
 
         @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
         async def inventory_button(self, interaction: discord.Interaction, button: Button):
             if interaction.user.name != host:
                 await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
                 return
-            await inventory(ctx)
+            await show_inventory(interaction)
 
     await ctx.send(embed=embed, view=GameMenu())
 
-async def shop(interaction):
+async def show_inventory(interaction):
+    embed = discord.Embed(title="Inventory List", color=discord.Color.blue())
+
+    for i, player in enumerate(team, start=1):
+        embed.add_field(
+            name=f"{i}. {player}",
+            value="**Weapon:** None\n**Armor:** None\n**Potion:** None",
+            inline=False
+        )
+
+    class InventoryMenu(View):
+        @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
+        async def back_button(self, interaction: discord.Interaction, button: Button):
+            await show_game_menu(interaction)
+
+    await interaction.response.edit_message(embed=embed, view=InventoryMenu())
+
+async def show_shop(interaction):
     embed = discord.Embed(
         title="Shop Menu",
         description="Choose a category:",
@@ -246,10 +245,40 @@ async def shop(interaction):
 
         @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
         async def back_button(self, interaction: discord.Interaction, button: Button):
-            await interaction.message.delete()
-            await start(interaction)
+            await show_game_menu(interaction)
 
-    await interaction.response.send_message(embed=embed, view=ShopMenu(), ephemeral=False)
+    await interaction.response.edit_message(embed=embed, view=ShopMenu())
+
+async def show_game_menu(interaction):
+    embed = discord.Embed(
+        title="Game Menu",
+        description="Choose an option:",
+        color=discord.Color.blue()
+    )
+
+    class GameMenu(View):
+        @discord.ui.button(label="Start", style=discord.ButtonStyle.green)
+        async def start_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the game host can start!", ephemeral=True)
+                return
+            await interaction.response.send_message("Adventure begins!")
+
+        @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
+        async def shop_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
+                return
+            await show_shop(interaction)
+
+        @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
+        async def inventory_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.name != host:
+                await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
+                return
+            await show_inventory(interaction)
+
+    await interaction.response.edit_message(embed=embed, view=GameMenu())
 
 @bot.command()
 async def endgame(ctx):
