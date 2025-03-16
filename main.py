@@ -111,9 +111,18 @@ async def info(ctx):
 game_active = False
 team = []
 host = None
+player_inventory = {}  # Stores player inventories
 
 def team_members():
-    return ", ".join(team) if team else "No members yet."
+    return "\n".join(f"{idx + 1}. {name}" for idx, name in enumerate(team)) if team else "No members yet."
+
+def generate_inventory(player_name):
+    """Creates a default inventory for a new player."""
+    player_inventory[player_name] = {
+        "Weapon": None,
+        "Armor": None,
+        "Potion": None
+    }
 
 @bot.command()
 async def startgame(ctx):
@@ -123,6 +132,7 @@ async def startgame(ctx):
         return
     
     team.clear()
+    player_inventory.clear()
     game_active = True
     host = ctx.author.name  # Save the host's name
     
@@ -148,6 +158,7 @@ async def join(ctx):
         return
     
     team.append(player_name)  # Add player to the team list
+    generate_inventory(player_name)  # Create an inventory for the player
 
     embed = discord.Embed(
         title="New Player Joined!",
@@ -159,100 +170,27 @@ async def join(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def start(ctx):
-    if not game_active:
-        await ctx.send("No active game! Use `.startgame` first.")
+async def inventory(ctx, member: discord.Member = None):
+    """Check a player's inventory."""
+    player_name = member.name if member else ctx.author.name  # Get the target player's name
+    
+    if player_name not in player_inventory:
+        await ctx.send(f"{player_name} has no inventory yet. Use `.join` first!")
         return
     
+    inventory = player_inventory[player_name]
+    inventory_text = "\n".join(f"{key}: {value if value else 'Empty'}" for key, value in inventory.items())
+
     embed = discord.Embed(
-        title="Game Menu",
-        description="Choose an option:",
+        title=f"{player_name}'s Inventory",
+        description=inventory_text,
         color=discord.Color.blue()
     )
-    
-    class GameMenu(View):
-        @discord.ui.button(label="Start", style=discord.ButtonStyle.green)
-        async def start_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:  # Check if the user is the host
-                await interaction.response.send_message("Only the game host can start!", ephemeral=True)
-                return
-            await interaction.response.send_message("Adventure begins!(not really)")
-
-        @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
-        async def shop_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
-                return
-            await interaction.message.delete()
-            await shop(interaction)  # Pass interaction instead of ctx
-
-        @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
-        async def inventory_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
-                return
-            await interaction.response.send_message("ni- what are you checking? YOU'RE BROKE ASF")
-
-    view = GameMenu()
-    await ctx.send(embed=embed, view=view)
-
-async def shop(interaction):
-    embed = discord.Embed(
-        title="Shop Menu",
-        description="Choose a category:",
-        color=discord.Color.purple()
-    )
-    
-    class ShopMenu(View):
-        @discord.ui.button(label="Weapons", style=discord.ButtonStyle.primary)
-        async def weapons_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the host can interact!", ephemeral=True)
-                return
-            weapons_embed = discord.Embed(
-                title="Weapons Shop",
-                description="⚔️ Sword - 100g\n🏹 Bow - 150g\n🔨 Hammer - 200g",
-                color=discord.Color.dark_gold()
-            )
-            await interaction.response.edit_message(embed=weapons_embed, view=self)
-        
-        @discord.ui.button(label="Armors", style=discord.ButtonStyle.primary)
-        async def armors_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the host can interact!", ephemeral=True)
-                return
-            armors_embed = discord.Embed(
-                title="Armor Shop",
-                description="🛡️ Chainmail - 200g\n🧥 Leather Armor - 150g\n👑 Helmet - 100g",
-                color=discord.Color.dark_gold()
-            )
-            await interaction.response.edit_message(embed=armors_embed, view=self)
-        
-        @discord.ui.button(label="Potions", style=discord.ButtonStyle.primary)
-        async def potions_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the host can interact!", ephemeral=True)
-                return
-            potions_embed = discord.Embed(
-                title="Potion Shop",
-                description="❤️ Health Potion - 50g\n🌀 Mana Potion - 75g\n⚡ Stamina Potion - 60g",
-                color=discord.Color.dark_gold()
-            )
-            await interaction.response.edit_message(embed=potions_embed, view=self)
-        
-        @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
-        async def back_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the host can interact!", ephemeral=True)
-                return
-            await interaction.message.delete()
-            await start(interaction)  # Pass interaction
-
-    await interaction.response.send_message(embed=embed, view=ShopMenu(), ephemeral=False)
+    await ctx.send(embed=embed)
 
 @bot.command()
 async def endgame(ctx):
-    global game_active, team, host
+    global game_active, team, host, player_inventory
     if not game_active:
         await ctx.send("There is no active game to end.")
         return
@@ -262,6 +200,7 @@ async def endgame(ctx):
     
     game_active = False
     team.clear()
+    player_inventory.clear()
     host = None
     embed = discord.Embed(
         title="Game Ended",
