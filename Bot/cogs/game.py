@@ -92,6 +92,9 @@ class Game(commands.Cog):
         if not game["active"]:
             await self._send(interaction_or_ctx, "No active game! Use `/game` or `.game` first.")
             return
+        if game["active"]:
+            await self._send(interaction_or_ctx, "A game is already active in this server!")
+            return
         if user.name in game["team"]:
             await self._send(interaction_or_ctx, f"{user.name}, you are already in the team!")
             return
