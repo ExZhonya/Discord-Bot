@@ -29,15 +29,25 @@ async def init_db():
         )
     """)
 
-    print("DEBUG: Attempting to add missing columns...")  # Debug message
+    # Check if "roles_channel" exists and rename it to "role_channel"
+    column_exists = await bot.db.fetchval("""
+        SELECT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'channels' AND column_name = 'roles_channel'
+        )
+    """)
 
-    # Add missing columns
-    try:
-        await bot.db.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS roles_channel BIGINT DEFAULT NULL")
-        await bot.db.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS introduction_channel BIGINT DEFAULT NULL")
-        print("DEBUG: Columns added successfully!")  # Debug success
-    except Exception as e:
-        print(f"ERROR: Failed to add columns - {e}")  # Debug failure
+    if column_exists:
+        print("Renaming 'roles_channel' to 'role_channel'...")
+        await bot.db.execute("ALTER TABLE channels RENAME COLUMN roles_channel TO role_channel")
+        print("Column renamed successfully!")
+
+    # Add missing columns if they don't exist
+    await bot.db.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS role_channel BIGINT DEFAULT NULL")
+    await bot.db.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS introduction_channel BIGINT DEFAULT NULL")
+
+    print("Database initialization complete!")
+
 
 
 async def get_channel_id(guild_id, channel_type):
