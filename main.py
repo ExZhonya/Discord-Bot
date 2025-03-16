@@ -77,38 +77,42 @@ async def update_status():
 # ---------------- Slash Commands ----------------
 @bot.tree.command(name="setchannel", description="(Admin) Set welcome, rules, heartbeat, role, or introduction channel.")
 @discord.app_commands.describe(
-    channel_type="Type of the channel to set (welcome, rules, heartbeat, role, introduction)",
+    channel_type="Select the type of channel to configure",
     channel="The channel you want to assign"
 )
+@discord.app_commands.choices(channel_type=[
+    discord.app_commands.Choice(name="Welcome Channel", value="welcome"),
+    discord.app_commands.Choice(name="Rules Channel", value="rules"),
+    discord.app_commands.Choice(name="Heartbeat Channel", value="heartbeat"),
+    discord.app_commands.Choice(name="Role Channel", value="role"),
+    discord.app_commands.Choice(name="Introduction Channel", value="introduction")
+])
 async def setchannel_slash(interaction: discord.Interaction, 
-                           channel_type: str, 
+                           channel_type: discord.app_commands.Choice[str], 
                            channel: discord.TextChannel):
 
     if not interaction.user.guild_permissions.administrator:
         await interaction.response.send_message("❌ You need admin permissions!", ephemeral=True)
         return
 
-    valid_types = ["welcome", "rules", "heartbeat", "role", "introduction"]
-    if channel_type.lower() not in valid_types:
-        await interaction.response.send_message(f"❌ Invalid type! Use one of: `{', '.join(valid_types)}`.", ephemeral=True)
-        return
-
     guild_id = interaction.guild.id
-    column_name = f"{channel_type.lower()}_channel"
+    column_name = f"{channel_type.value}_channel"
 
     await ensure_guild_exists(guild_id)
     current_channel_id = await get_channel_id(guild_id, column_name)
 
-    # Safely cast to int if exists, else None
-    if current_channel_id is not None:
-        current_channel_id = int(current_channel_id)
+    # Defensive cast in case DB returns NULL as string or None
+    try:
+        current_channel_id = int(current_channel_id) if current_channel_id else None
+    except ValueError:
+        current_channel_id = None
 
     if current_channel_id == channel.id:
         await remove_channel_id(guild_id, column_name)
-        await interaction.response.send_message(f"✅ {channel_type.capitalize()} has been **removed** from {channel.mention}.", ephemeral=False)
+        await interaction.response.send_message(f"✅ `{channel_type.name}` has been **removed** from {channel.mention}.", ephemeral=False)
     else:
         await set_channel_id(guild_id, column_name, channel.id)
-        await interaction.response.send_message(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!", ephemeral=False)
+        await interaction.response.send_message(f"✅ `{channel_type.name}` set to {channel.mention}!", ephemeral=False)
 
 
 
