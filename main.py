@@ -1,4 +1,4 @@
-import discord, os, asyncio, asyncpg
+import discord, os, asyncio, asyncpg, discord.app_commands
 from dotenv import load_dotenv
 from discord.ext import commands, tasks
 from discord.ui import View, Button
