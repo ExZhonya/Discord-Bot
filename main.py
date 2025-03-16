@@ -68,13 +68,9 @@ async def on_ready():
 
 @tasks.loop(minutes=1)
 async def update_status():
-    # Get the current UTC timestamp properly
-    timestamp = int(datetime.now(UTC).timestamp())  # Now uses timezone-aware UTC
-
-    # Use Discord's timestamp format to show localized time
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.watching, 
-        name=f"watching the servers.\n<t:{timestamp}:F>"
+        name=f"**Watching the servers.**>"
     ))
 # ---------------- Help Commands ----------------
 @bot.command()
