@@ -306,7 +306,7 @@ async def game_slash(interaction: discord.Interaction):
     game["team"].append(game["host"])
     game["inventory"] = {}
     game["gold"] = {}
-    game["has_started"] = False  # <-- Flag to prevent `.start` reuse
+    game["has_started"] = False
 
     game["inventory"][interaction.user.name] = {"Weapon": None, "Armor": None, "Potion": None}
     game["gold"][interaction.user.name] = 0
@@ -349,8 +349,9 @@ async def game(ctx):
     game["active"] = True
     game["host"] = ctx.author.name
     game["team"].append(game["host"])
-    game["inventory"] = {}  # Reset inventory for a new game
-    game["gold"] = {}  # Reset gold balance for a new game
+    game["inventory"] = {}
+    game["gold"] = {}
+    game["has_started"] = False
 
     # Initialize gold & inventory for the host
     game["inventory"][ctx.author.name] = {"Weapon": None, "Armor": None, "Potion": None}
@@ -599,7 +600,8 @@ async def endgame(ctx):
         await ctx.send("Only the host can end the game!")
         return
 
-    games.pop(guild_id, None)  # Completely remove game data for this server
+    game["has_started"] = False
+    games.pop(guild_id, None)
 
     embed = discord.Embed(
         title="Game Ended",
@@ -607,6 +609,7 @@ async def endgame(ctx):
         color=discord.Color.red()
     )
     await ctx.send(embed=embed)
+
 
 
 bot.run(TOKEN)
