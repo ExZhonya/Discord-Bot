@@ -81,11 +81,11 @@ async def update_status():
     channel="The channel you want to assign"
 )
 @discord.app_commands.choices(channel_type=[
-    discord.app_commands.Choice(name="Welcome Channel", value="welcome"),
-    discord.app_commands.Choice(name="Rules Channel", value="rules"),
-    discord.app_commands.Choice(name="Heartbeat Channel", value="heartbeat"),
-    discord.app_commands.Choice(name="Role Channel", value="role"),
-    discord.app_commands.Choice(name="Introduction Channel", value="introduction")
+    discord.app_commands.Choice(name="Welcome", value="welcome"),
+    discord.app_commands.Choice(name="Rules", value="rules"),
+    discord.app_commands.Choice(name="Heartbeat", value="heartbeat"),
+    discord.app_commands.Choice(name="Role", value="role"),
+    discord.app_commands.Choice(name="Introduction", value="introduction")
 ])
 async def setchannel_slash(interaction: discord.Interaction, 
                            channel_type: discord.app_commands.Choice[str], 
