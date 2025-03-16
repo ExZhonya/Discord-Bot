@@ -156,6 +156,60 @@ async def on_member_join(member):
             await asyncio.sleep(10)
             await msg.delete()
 
+@bot.command()
+async def previewwelcome(ctx):
+    """Sends a preview of the welcome message for testing."""
+    guild = ctx.guild
+    guild_id = guild.id
+    member = ctx.author  # Simulate the sender as the new member
+
+    # Fetch channel IDs from the database
+    welcome_channel_id = await get_channel_id(guild_id, "welcome_channel")
+    rules_channel_id = await get_channel_id(guild_id, "rules_channel")
+    role_channel_id = await get_channel_id(guild_id, "role_channel")
+    introduction_channel_id = await get_channel_id(guild_id, "introduction_channel")
+
+    if not welcome_channel_id:
+        await ctx.send("⚠️ No welcome channel is set! Use `.setchannel welcome #channel` first.")
+        return
+
+    current_time = discord.utils.utcnow().strftime("%I:%M %p")
+
+    # Masked Links (if channels exist)
+    rules_link = f"[rules](https://discord.com/channels/{guild.id}/{rules_channel_id})" if rules_channel_id else "`N/A`"
+    roles_link = f"[roles](https://discord.com/channels/{guild.id}/{role_channel_id})" if role_channel_id else "`N/A`"
+    intro_link = f"[introduction](https://discord.com/channels/{guild.id}/{introduction_channel_id})" if introduction_channel_id else "`N/A`"
+
+    # Embed Setup
+    embed = discord.Embed(
+        title=f"👋 Welcome, {member.name}!",
+        description="We're excited to see you here!\n\n"
+                    f"`Welcome to {guild.name}`\n\n"
+                    "📜 Read the rules in\n"
+                    f"{rules_link}\n\n"
+                    "🎭 Get yourself a role on\n"
+                    f"{roles_link}\n\n"
+                    "📢 Introduce yourself in\n"
+                    f"{intro_link}\n\n"
+                    "**Start having fun!** 🎉\n\n"
+                    "Enjoy your stay! If you have any questions, feel free to ask.",
+        color=discord.Color.green()
+    )
+
+    # Set server icon if available
+    if guild.icon:
+        embed.set_author(name=guild.name, icon_url=guild.icon.url)
+    else:
+        embed.set_author(name=guild.name)
+
+    # Set user avatar & welcome GIF
+    embed.set_thumbnail(url=member.display_avatar.url)
+    embed.set_image(url="https://tenor.com/0hGx.gif")  # Example GIF
+    embed.set_footer(text=f"Today at {current_time}")
+
+    await ctx.send(embed=embed)
+
+
 async def ensure_guild_exists(guild_id):
     """Ensures a guild entry exists in the database before modifying."""
     await bot.db.execute("""
