@@ -137,15 +137,13 @@ async def on_member_join(member):
                             f"{rules_text}\n\n"
                             f"{roles_text}\n\n"
                             f"{intro_text}\n\n"
-                            "**Start having fun!** 🎉\n\n"
-                            "Enjoy your stay! If you have any questions, feel free to ask.",
+                            "**Start having fun!** 🎉\n\n",
                 color=discord.Color.green()
             )
 
             embed.set_author(name=guild.name, icon_url=guild.icon.url if guild.icon else None)
             embed.set_thumbnail(url=member.display_avatar.url)
-            embed.set_image(url="https://tenor.com/0hGx.gif")  # Example GIF
-            embed.set_footer(text=f"Today at {current_time}")
+            embed.set_footer(text=f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {current_time}")
 
             await welcome_channel.send(embed=embed)
 
