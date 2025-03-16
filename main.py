@@ -206,11 +206,11 @@ async def start(ctx):
     game = get_game(guild_id)
     
     if not game["active"]:
-        await ctx.send("No active game! Use `.game` first.")
+        await ctx.send("No active game! Use `.game` first.", delete_after=3)
         return
     
     if ctx.author.name != game["host"]:
-        await ctx.send("Only the host can start the game!")
+        await ctx.send("Only the host can start the game!", delete_after=3)
         return
 
     await show_game_menu(ctx)
