@@ -204,9 +204,13 @@ async def start(ctx):
     """Opens the Game Menu if a game is active."""
     guild_id = ctx.guild.id
     game = get_game(guild_id)
-
+    
     if not game["active"]:
         await ctx.send("No active game! Use `.game` first.")
+        return
+    
+    if ctx.author.name != game["host"]:
+        await ctx.send("Only the host can start the game!")
         return
 
     await show_game_menu(ctx)
