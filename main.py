@@ -52,7 +52,7 @@ async def heartbeat_task():
                     await channel.send("💓 Heartbeat: Bot is still alive!")
         await asyncio.sleep(900)
 
-# ---------------- Events & Commands ----------------
+# ---------------- Status ----------------
 
 @bot.event
 async def on_ready():
@@ -60,6 +60,7 @@ async def on_ready():
     print(f"✅ Logged in as {bot.user}!")
     bot.loop.create_task(heartbeat_task())
 
+# ---------------- Help Commands ----------------
 @bot.command()
 async def help(ctx):
     embed = discord.Embed(
@@ -71,7 +72,7 @@ async def help(ctx):
     embed.add_field(name=".ping", value="Checks the bot's latency.", inline=False)
     embed.add_field(name=".info", value="Provides server information.", inline=False)
     embed.add_field(name=".gamehelp", value="List of Game's commands.", inline=False)
-    embed.add_field(name=".setchannel", value="(Admin) Set welcome, rules, or heartbeat channels.", inline=False)
+    embed.add_field(name=".channelhelp", value="(Admin) Set welcome, rules, or heartbeat channels.", inline=False)
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -85,6 +86,19 @@ async def gamehelp(ctx):
     embed.add_field(name=".start", value="Use this to open the Game Menu.", inline=False)
     embed.add_field(name=".endgame", value="Use this to end an existing game.", inline=False)
     await ctx.send(embed=embed)
+
+@bot.command()
+async def channelhelp(ctx):
+    embed = discord.Embed(
+        title="Set Channel Help",
+        color=discord.Color.blue()
+    )
+
+    embed.add_field(name=".setchannel welcome", value="Set your welcome channel.")
+    embed.add_field(name=".setchannel rules", value="Set your rules channel. use `.rules` to make a fix preset of rules.(TBC Soon)")
+    embed.add_field(name=".setchannel heartbeat", value="Set a heartbeat message of the bot's Online.")
+
+# ---------------- Events & Commands ----------------
 
 @bot.event
 async def on_member_join(member):
