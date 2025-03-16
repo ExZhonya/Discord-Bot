@@ -366,6 +366,7 @@ async def game(ctx):
 
     await ctx.send(embed=embed)
 
+@bot.command()
 async def start(ctx):
     guild_id = ctx.guild.id
     game = get_game(guild_id)
