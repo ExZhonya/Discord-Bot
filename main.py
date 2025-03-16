@@ -127,10 +127,10 @@ async def rules(ctx):
         )
         embed.add_field(name="1. Respect everyone", value="Be respectful towards everyone.", inline=False)
         embed.add_field(name="2. No slurs", value="Do not use slurs or anything similar towards others.", inline=False)
-        embed.add_field(name="3. Love the owner.", value="Because so.", inline=False)
+        embed.add_field(name="3. Love the owner.", value="Because i say so.", inline=False)
         await ctx.send(embed=embed)
     else:
-        msg = await ctx.send(f"Please use this command in <#{rules_channel_id}>!")
+        msg = await ctx.send(f"⚠️ Use this command in <#{rules_channel_id}>!")
         await asyncio.sleep(5)
         await msg.delete()
 
