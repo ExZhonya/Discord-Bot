@@ -163,7 +163,7 @@ async def on_member_join(member):
             await msg.delete()
 
 @bot.command()
-async def previewwelcome(ctx):
+async def welcomepreview(ctx):
     if not ctx.author.guild_permissions.manage_guild:
         await ctx.send("You need the 'Manage Server' permission to use this command!")
         return
@@ -288,6 +288,36 @@ async def info(ctx):
 
     await ctx.send(embed=embed)
 
+# ---------------- Game Slash System ----------------
+@bot.tree.command(name="game", description="Start a new game session.")
+async def game_slash(interaction: discord.Interaction):
+    guild_id = interaction.guild.id
+    game = get_game(guild_id)
+
+    if game["active"]:
+        await interaction.response.send_message("A game is already active in this server!", ephemeral=True)
+        return
+
+    game["team"].clear()
+    game["active"] = True
+    game["host"] = interaction.user.name
+    game["team"].append(game["host"])
+    game["inventory"] = {}
+    game["gold"] = {}
+    game["has_started"] = False  # <-- Flag to prevent `.start` reuse
+
+    game["inventory"][interaction.user.name] = {"Weapon": None, "Armor": None, "Potion": None}
+    game["gold"][interaction.user.name] = 0
+
+    embed = discord.Embed(
+        title="Game Started! 🎮",
+        description="A new game session has begun. Use `/join` or `.join` to participate!",
+        color=discord.Color.gold()
+    )
+    embed.add_field(name="Current Team Members", value="\n".join(game["team"]), inline=False)
+
+    await interaction.response.send_message(embed=embed)
+
 # ---------------- Game System ----------------
 
 games = {}  # Dictionary to store game data per server
@@ -333,18 +363,36 @@ async def game(ctx):
 
     await ctx.send(embed=embed)
 
-@bot.command()
 async def start(ctx):
-    """Opens the Game Menu if a game is active."""
     guild_id = ctx.guild.id
     game = get_game(guild_id)
-    
+
     if not game["active"]:
-        await ctx.send("No active game! Use `.game` first.", delete_after=3)
+        await ctx.send("No active game! Use `/game` first.", delete_after=3)
         return
-    
+
     if ctx.author.name != game["host"]:
         await ctx.send("Only the host can start the game!", delete_after=3)
+        return
+
+    if game.get("has_started"):
+        await ctx.send("This session has already been started. Use `.menu` instead.", delete_after=3)
+        return
+
+    game["has_started"] = True
+    await show_game_menu(ctx)
+
+@bot.command()
+async def menu(ctx):
+    guild_id = ctx.guild.id
+    game = get_game(guild_id)
+
+    if not game["active"]:
+        await ctx.send("No active game! Use `/game` first.", delete_after=3)
+        return
+
+    if ctx.author.name != game["host"]:
+        await ctx.send("Only the host can open the menu!", delete_after=3)
         return
 
     await show_game_menu(ctx)
