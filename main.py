@@ -95,8 +95,9 @@ async def gamehelp(ctx):
     )
     
     embed.add_field(name=".game", value="Use this to start a game.", inline=False)
-    embed.add_field(name=".start", value="Use this to open the Game Menu.", inline=False)
+    embed.add_field(name=".start", value="Start the game.", inline=False)
     embed.add_field(name=".endgame", value="Use this to end an existing game.", inline=False)
+    embed.add_field(name=".menu", value="Open the Game's Menu.", inline=False)
     await ctx.send(embed=embed)
 
 @bot.command()
