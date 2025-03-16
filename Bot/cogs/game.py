@@ -1,12 +1,13 @@
 # /cogs/game.py
 import discord
 from discord.ext import commands
-from utils.views import GameMenu, ShopMenu, WeaponShop
+from discord import app_commands
+from ..utils.views import GameMenu
 
 class Game(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.games = {}  # Dictionary to store game data per guild
+        self.games = {}
 
     def get_game(self, guild_id):
         if guild_id not in self.games:
@@ -20,111 +21,128 @@ class Game(commands.Cog):
             }
         return self.games[guild_id]
 
+    # Slash Command: /game
+    @app_commands.command(name="game", description="Start a new game session.")
+    async def game_slash(self, interaction: discord.Interaction):
+        await self.start_game(interaction.guild.id, interaction.user, interaction)
+
     @commands.command()
     async def game(self, ctx):
-        guild_id = ctx.guild.id
-        game = self.get_game(guild_id)
+        await self.start_game(ctx.guild.id, ctx.author, ctx)
 
+    async def start_game(self, guild_id, user, interaction_or_ctx):
+        game = self.get_game(guild_id)
         if game["active"]:
-            await ctx.send("A game is already active in this server!")
+            await self._send(interaction_or_ctx, "A game is already active in this server!")
             return
 
         game.update({
             "active": True,
-            "team": [ctx.author.name],
-            "host": ctx.author.name,
-            "inventory": {ctx.author.name: {"Weapon": None, "Armor": None, "Potion": None}},
-            "gold": {ctx.author.name: 0},
+            "team": [user.name],
+            "host": user.name,
+            "inventory": {user.name: {"Weapon": None, "Armor": None, "Potion": None}},
+            "gold": {user.name: 0},
             "has_started": False
         })
 
         embed = discord.Embed(
             title="Game Started! 🎮",
-            description="A new game session has begun. Use `.join` to participate!",
+            description="A new game session has begun. Use `/join` or `.join` to participate!",
             color=discord.Color.gold()
         )
         embed.add_field(name="Current Team Members", value="\n".join(game["team"]))
-        await ctx.send(embed=embed)
+        await self._send(interaction_or_ctx, embed=embed)
+
+    @app_commands.command(name="start", description="Start the game (host only)")
+    async def start_slash(self, interaction: discord.Interaction):
+        await self.open_menu(interaction.guild.id, interaction.user, interaction)
 
     @commands.command()
     async def start(self, ctx):
-        game = self.get_game(ctx.guild.id)
-        if not game["active"]:
-            await ctx.send("No active game! Use `.game` first.")
-            return
-        if ctx.author.name != game["host"]:
-            await ctx.send("Only the host can start the game!")
-            return
-        if game["has_started"]:
-            await ctx.send("This session has already been started. Use `.menu` instead.")
-            return
-        game["has_started"] = True
-        await ctx.send(embed=discord.Embed(title="Game Menu", description="Choose an option:", color=discord.Color.blue()), view=GameMenu(ctx, self))
+        await self.open_menu(ctx.guild.id, ctx.author, ctx)
+
+    @app_commands.command(name="menu", description="Open the game menu (host only)")
+    async def menu_slash(self, interaction: discord.Interaction):
+        await self.open_menu(interaction.guild.id, interaction.user, interaction)
 
     @commands.command()
     async def menu(self, ctx):
-        game = self.get_game(ctx.guild.id)
+        await self.open_menu(ctx.guild.id, ctx.author, ctx)
+
+    async def open_menu(self, guild_id, user, interaction_or_ctx):
+        game = self.get_game(guild_id)
         if not game["active"]:
-            await ctx.send("No active game! Use `.game` first.")
+            await self._send(interaction_or_ctx, "No active game! Use `/game` or `.game` first.")
             return
-        if ctx.author.name != game["host"]:
-            await ctx.send("Only the host can open the menu!")
+        if user.name != game["host"]:
+            await self._send(interaction_or_ctx, "Only the host can open the menu!")
             return
-        await ctx.send(embed=discord.Embed(title="Game Menu", description="Choose an option:", color=discord.Color.blue()), view=GameMenu(ctx, self))
+        await self._send(interaction_or_ctx, embed=discord.Embed(title="Game Menu", description="Choose an option:", color=discord.Color.blue()), view=GameMenu(interaction_or_ctx, game))
+
+    @app_commands.command(name="join", description="Join the game")
+    async def join_slash(self, interaction: discord.Interaction):
+        await self.join_game(interaction.guild.id, interaction.user, interaction)
 
     @commands.command()
     async def join(self, ctx):
-        game = self.get_game(ctx.guild.id)
-        player_name = ctx.author.name
+        await self.join_game(ctx.guild.id, ctx.author, ctx)
 
+    async def join_game(self, guild_id, user, interaction_or_ctx):
+        game = self.get_game(guild_id)
         if not game["active"]:
-            await ctx.send("No active game! Use `.game` first.")
+            await self._send(interaction_or_ctx, "No active game! Use `/game` or `.game` first.")
             return
-        if player_name in game["team"]:
-            await ctx.send(f"{player_name}, you are already in the team!")
+        if user.name in game["team"]:
+            await self._send(interaction_or_ctx, f"{user.name}, you are already in the team!")
             return
-
-        game["team"].append(player_name)
-        game["inventory"][player_name] = {"Weapon": None, "Armor": None, "Potion": None}
-        game["gold"][player_name] = 0
-
+        game["team"].append(user.name)
+        game["inventory"][user.name] = {"Weapon": None, "Armor": None, "Potion": None}
+        game["gold"][user.name] = 0
         embed = discord.Embed(
             title="New Player Joined! 🎉",
-            description=f"{player_name} has joined the adventure!",
+            description=f"{user.name} has joined the adventure!",
             color=discord.Color.green()
         )
         embed.add_field(name="Current Team Members", value="\n".join(game["team"]))
-        await ctx.send(embed=embed)
+        await self._send(interaction_or_ctx, embed=embed)
+
+    @app_commands.command(name="gold", description="Check your current gold")
+    async def gold_slash(self, interaction: discord.Interaction):
+        await self.check_gold(interaction.guild.id, interaction.user, interaction)
 
     @commands.command()
     async def gold(self, ctx):
-        game = self.get_game(ctx.guild.id)
-        player_name = ctx.author.name
-        gold = game["gold"].get(player_name, 0)
-        await ctx.send(f"💰 {player_name}, you have **{gold} gold**.")
+        await self.check_gold(ctx.guild.id, ctx.author, ctx)
 
-    @commands.command()
-    async def addgold(self, ctx, amount: int):
-        if not ctx.author.guild_permissions.administrator:
-            await ctx.send("❌ You need admin permissions to use this command.")
-            return
-        game = self.get_game(ctx.guild.id)
-        player_name = ctx.author.name
-        game["gold"][player_name] = game["gold"].get(player_name, 0) + amount
-        await ctx.send(f"💰 {player_name} now has {game['gold'][player_name]} gold!")
+    async def check_gold(self, guild_id, user, interaction_or_ctx):
+        game = self.get_game(guild_id)
+        gold = game["gold"].get(user.name, 0)
+        await self._send(interaction_or_ctx, f"💰 {user.name}, you have **{gold} gold**.")
+
+    @app_commands.command(name="endgame", description="End the game (host only)")
+    async def endgame_slash(self, interaction: discord.Interaction):
+        await self.end_game(interaction.guild.id, interaction.user, interaction)
 
     @commands.command()
     async def endgame(self, ctx):
-        guild_id = ctx.guild.id
+        await self.end_game(ctx.guild.id, ctx.author, ctx)
+
+    async def end_game(self, guild_id, user, interaction_or_ctx):
         game = self.get_game(guild_id)
         if not game["active"]:
-            await ctx.send("There is no active game to end.")
+            await self._send(interaction_or_ctx, "There is no active game to end.")
             return
-        if ctx.author.name != game["host"]:
-            await ctx.send("Only the host can end the game!")
+        if user.name != game["host"]:
+            await self._send(interaction_or_ctx, "Only the host can end the game!")
             return
         self.games.pop(guild_id)
-        await ctx.send(embed=discord.Embed(title="Game Ended", description="The game session has been concluded.", color=discord.Color.red()))
+        await self._send(interaction_or_ctx, embed=discord.Embed(title="Game Ended", description="The game session has been concluded.", color=discord.Color.red()))
+
+    async def _send(self, ctx_or_interaction, content=None, embed=None, view=None):
+        if isinstance(ctx_or_interaction, discord.Interaction):
+            await ctx_or_interaction.response.send_message(content=content, embed=embed, view=view)
+        else:
+            await ctx_or_interaction.send(content=content, embed=embed, view=view)
 
 async def setup(bot):
     await bot.add_cog(Game(bot))
