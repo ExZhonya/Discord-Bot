@@ -87,12 +87,25 @@ class Game(commands.Cog):
 
 
     @commands.command()
-    async def start(self, ctx, guild_id, interaction_or_ctx):
+    async def start(self, ctx):
+        guild_id = ctx.guild.id
+        user = ctx.author
         game = self.get_game(guild_id)
-        if game["has_started"]:
-            await self._send(interaction_or_ctx, "A game is already active in this server!")
+
+        if not game["active"]:
+            await self._send(ctx, "No active game! Use `/game` or `.game` first.")
             return
-        await self.open_menu(ctx.guild.id, ctx.author, ctx)
+        if user.name != game["host"]:
+            await self._send(ctx, "Only the host can start the game!")
+            return
+        if game["has_started"]:
+            await self._send(ctx, "The game has already started!")
+            return
+
+        game["has_started"] = True
+
+        await self.open_menu(guild_id, user, ctx)
+
 
     @app_commands.command(name="menu", description="Open the game menu (host only)")
     async def menu_slash(self, interaction: discord.Interaction):
