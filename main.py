@@ -1,8 +1,9 @@
-import discord, os, asyncio
+import discord, os, asyncio, asyncpg
 from dotenv import load_dotenv
 from discord.ext import commands
 from discord.ui import View, Button
-import asyncpg
+from datetime import datetime
+
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -169,11 +170,14 @@ async def previewwelcome(ctx):
     role_channel_id = await get_channel_id(guild_id, "role_channel")
     introduction_channel_id = await get_channel_id(guild_id, "introduction_channel")
 
+    # Debugging - Print fetched channel IDs
+    print(f"DEBUG: Welcome: {welcome_channel_id}, Rules: {rules_channel_id}, Roles: {role_channel_id}, Intro: {introduction_channel_id}")
+
     if not welcome_channel_id:
         await ctx.send("⚠️ No welcome channel is set! Use `.setchannel welcome #channel` first.")
         return
 
-    current_time = discord.utils.utcnow().strftime("%I:%M %p")
+    current_time = datetime.utcnow().strftime("%I:%M %p")
 
     # Masked Links (if channels exist)
     rules_link = f"[rules](https://discord.com/channels/{guild.id}/{rules_channel_id})" if rules_channel_id else "`N/A`"
@@ -195,6 +199,20 @@ async def previewwelcome(ctx):
                     "Enjoy your stay! If you have any questions, feel free to ask.",
         color=discord.Color.green()
     )
+
+    # Set server icon if available
+    if guild.icon:
+        embed.set_author(name=guild.name, icon_url=guild.icon.url)
+    else:
+        embed.set_author(name=guild.name)
+
+    # Set user avatar & welcome GIF
+    embed.set_thumbnail(url=member.display_avatar.url)
+    embed.set_image(url="https://tenor.com/0hGx.gif")  # Example GIF
+    embed.set_footer(text=f"Today at {current_time}")
+
+    await ctx.send(embed=embed)
+
 
     # Set server icon if available
     if guild.icon:
