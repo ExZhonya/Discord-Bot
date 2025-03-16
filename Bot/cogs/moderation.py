@@ -29,7 +29,7 @@ class Moderation(commands.Cog):
                                channel: discord.TextChannel):
 
         if not interaction.user.guild_permissions.manage_guild:
-            await interaction.response.send_message("❌ You need admin permissions!", ephemeral=True)
+            await interaction.response.send_message("❌ You need manage server permissions!", ephemeral=True)
             return
 
         guild_id = interaction.guild.id
@@ -48,7 +48,7 @@ class Moderation(commands.Cog):
     @commands.command()
     async def setchannel(self, ctx, channel_type: str, channel: discord.TextChannel):
         if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send("❌ You need admin permissions!", delete_after=3)
+            await ctx.send("❌ You need manage server permissions!", delete_after=3)
             return
 
         if channel_type.lower() not in ["welcome", "rules", "heartbeat", "role", "introduction"]:
