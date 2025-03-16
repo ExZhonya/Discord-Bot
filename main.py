@@ -215,7 +215,7 @@ async def setchannel(ctx, channel_type: str, channel: discord.TextChannel):
         await ctx.send("❌ You need admin permissions!", delete_after=3)
         return
 
-    if channel_type.lower() not in ["welcome", "rules", "heartbeat"]:
+    if channel_type.lower() not in ["welcome", "rules", "heartbeat", "role", "introduction"]:
         await ctx.send("❌ Invalid type! Use `welcome`, `rules`, or `heartbeat`.", delete_after=3)
         return
 
