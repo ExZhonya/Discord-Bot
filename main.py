@@ -96,7 +96,7 @@ async def channelhelp(ctx):
 
     embed.add_field(name=".setchannel welcome", value="Set your welcome channel.", inline=False)
     embed.add_field(name=".setchannel rules", value="Set your rules channel. use `.rules` to make a fix preset of rules.(TBC Soon)", inline=False)
-    embed.add_field(name=".setchannel heartbeat", value="Set a heartbeat message of the bot's Online.", inline=False)
+    embed.add_field(name=".setchannel heartbeat", value="Set a heartbeat message of the bot's status.", inline=False)
     await ctx.send(embed=embed)
 
 # ---------------- Events & Commands ----------------
