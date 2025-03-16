@@ -59,18 +59,21 @@ async def help(ctx):
     embed.add_field(name=".help", value="Displays this help menu.", inline=False)
     embed.add_field(name=".ping", value="Checks the bot's latency.", inline=False)
     embed.add_field(name=".info", value="Provides server information.", inline=False)
+    embed.add_field(name=".gamehelp", value="List of Game's commands", inline=False)
     await ctx.send(embed=embed)
 
 @bot.command()
 async def gamehelp(ctx):
     embed = discord.Embed(
-        title="Game Help"
-
-    embed.add_field(name=".game", value="Use this to start a game.")
-    embed.add_field(name=".start", value="Use this to open Game Menu.")
-    embed.add_field(name=".endgame", value="Use this to end existing game.")
-    await ctx.send(embed=embed)
+        title="Game Help",
+        color=discord.Color.blue()
     )
+    
+    embed.add_field(name=".game", value="Use this to start a game.", inline=False)
+    embed.add_field(name=".start", value="Use this to open the Game Menu.", inline=False)
+    embed.add_field(name=".endgame", value="Use this to end an existing game.", inline=False)
+    await ctx.send(embed=embed)
+
 
 @bot.command()
 async def rules(ctx):
