@@ -21,16 +21,10 @@ class Moderation(commands.Cog):
         app_commands.Choice(name="Role", value="role"),
         app_commands.Choice(name="Introduction", value="introduction")
     ])
-
-# ---------------- Slash Commands ----------------
-
+    @app_commands.checks.has_permissions(manage_guild=True)
     async def setchannel_slash(self, interaction: discord.Interaction, 
                                channel_type: app_commands.Choice[str], 
                                channel: discord.TextChannel):
-
-        if not interaction.user.guild_permissions.manage_guild:
-            await interaction.response.send_message("❌ You need manage server permissions!", ephemeral=True)
-            return
 
         guild_id = interaction.guild.id
         column_name = f"{channel_type.value}_channel"
@@ -44,13 +38,9 @@ class Moderation(commands.Cog):
             await set_channel_id(self.bot, guild_id, column_name, channel.id)
             await interaction.response.send_message(f"✅ `{channel_type.name}` set to {channel.mention}!", ephemeral=False)
 
-# ---------------- Text Commands ----------------
     @commands.command()
+    @commands.has_guild_permissions(manage_guild=True)
     async def setchannel(self, ctx, channel_type: str, channel: discord.TextChannel):
-        if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send("❌ You need manage server permissions!", delete_after=3)
-            return
-
         if channel_type.lower() not in ["welcome", "rules", "heartbeat", "role", "introduction"]:
             await ctx.send("❌ Invalid type! Use `welcome`, `rules`, or `heartbeat`.", delete_after=3)
             return
@@ -68,11 +58,8 @@ class Moderation(commands.Cog):
             await ctx.send(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!")
 
     @commands.command()
+    @commands.has_guild_permissions(manage_guild=True)
     async def rules(self, ctx):
-        if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send("You need the 'Manage Server' permission to use this command!")
-            return
-
         rules_channel_id = await get_channel_id(self.bot, ctx.guild.id, "rules_channel")
         if ctx.channel.id == rules_channel_id:
             embed = discord.Embed(
@@ -81,17 +68,14 @@ class Moderation(commands.Cog):
             )
             embed.add_field(name="1. Respect everyone", value="Be respectful towards everyone.", inline=False)
             embed.add_field(name="2. No slurs", value="Do not use slurs or anything similar towards others.", inline=False)
-            embed.add_field(name="3. Love the owner.", value="Because i say so.", inline=False)
+            embed.add_field(name="3. Love the owner.", value="Because I say so.", inline=False)
             await ctx.send(embed=embed)
         else:
-            await ctx.send(f"⚠️ Use this command in <#{rules_channel_id}>!", delete_after= 5)
+            await ctx.send(f"⚠️ Use this command in <#{rules_channel_id}>!", delete_after=5)
 
     @commands.command()
+    @commands.has_guild_permissions(manage_guild=True)
     async def welcomepreview(self, ctx):
-        if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send("You need the 'Manage Server' permission to use this command!", delete_after = 5)
-            return
-
         guild = ctx.guild
         guild_id = guild.id
         member = ctx.author
