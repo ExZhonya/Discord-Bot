@@ -62,6 +62,17 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def gamehelp(ctx):
+    embed = discord.Embed(
+        title="Game Help"
+
+    embed.add_field(name=".game", value="Use this to start a game.")
+    embed.add_field(name=".start", value="Use this to open Game Menu.")
+    embed.add_field(name=".endgame", value="Use this to end existing game.")
+    await ctx.send(embed=embed)
+    )
+
+@bot.command()
 async def rules(ctx):
     if ctx.channel.id == RULES_CHANNEL_ID:
         embed = discord.Embed(
