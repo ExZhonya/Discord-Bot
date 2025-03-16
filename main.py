@@ -200,6 +200,59 @@ async def game(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def start(ctx):
+    """Opens the Game Menu if a game is active."""
+    guild_id = ctx.guild.id
+    game = get_game(guild_id)
+
+    if not game["active"]:
+        await ctx.send("No active game! Use `.game` first.")
+        return
+
+    await show_game_menu(ctx)
+
+async def show_game_menu(ctx):
+    """Displays the main game menu with options."""
+    embed = discord.Embed(
+        title="Game Menu",
+        description="Choose an option:",
+        color=discord.Color.blue()
+    )
+
+    class GameMenu(View):
+        @discord.ui.button(label="Start Adventure", style=discord.ButtonStyle.green)
+        async def start_button(self, interaction: discord.Interaction, button: Button):
+            guild_id = interaction.guild.id
+            game = get_game(guild_id)
+            if interaction.user.name != game["host"]:
+                await interaction.response.send_message("Only the host can start!", ephemeral=True)
+                return
+            await interaction.message.delete()
+            await interaction.channel.send("🌍 The adventure begins!")
+
+        @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
+        async def shop_button(self, interaction: discord.Interaction, button: Button):
+            guild_id = interaction.guild.id
+            game = get_game(guild_id)
+            if interaction.user.name != game["host"]:
+                await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
+                return
+            await interaction.message.delete()
+            await show_shop(interaction.channel)
+
+        @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
+        async def inventory_button(self, interaction: discord.Interaction, button: Button):
+            guild_id = interaction.guild.id
+            game = get_game(guild_id)
+            if interaction.user.name != game["host"]:
+                await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
+                return
+            await interaction.message.delete()
+            await show_inventory(interaction.channel)
+
+    await ctx.send(embed=embed, view=GameMenu())
+
+@bot.command()
 async def join(ctx):
     guild_id = ctx.guild.id
     game = get_game(guild_id)
@@ -360,7 +413,12 @@ async def endgame(ctx):
 
     games.pop(guild_id, None)  # Completely remove game data for this server
 
-    await ctx.send("🔴 The game session has been ended.")
+    embed = discord.Embed(
+        title="Game Ended",
+        description="The game session has been concluded.",
+        color=discord.Color.red()
+    )
+    await ctx.send(embed=embed)
 
 
 bot.run(TOKEN)
