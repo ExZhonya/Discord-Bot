@@ -60,6 +60,30 @@ async def on_ready():
     print(f"✅ Logged in as {bot.user}!")
     bot.loop.create_task(heartbeat_task())
 
+@bot.command()
+async def help(ctx):
+    embed = discord.Embed(
+        title="Bot Help Menu",
+        description="Here are the available commands:",
+        color=discord.Color.blue()
+    )
+    embed.add_field(name=".help", value="Displays this help menu.", inline=False)
+    embed.add_field(name=".ping", value="Checks the bot's latency.", inline=False)
+    embed.add_field(name=".info", value="Provides server information.", inline=False)
+    await ctx.send(embed=embed)
+
+bot.command()
+async def gamehelp(ctx):
+    embed = discord.Embed(
+        title="Game Help",
+        color=discord.Color.blue()
+    )
+    
+    embed.add_field(name=".game", value="Use this to start a game.", inline=False)
+    embed.add_field(name=".start", value="Use this to open the Game Menu.", inline=False)
+    embed.add_field(name=".endgame", value="Use this to end an existing game.", inline=False)
+    await ctx.send(embed=embed)
+
 @bot.event
 async def on_member_join(member):
     guild_id = member.guild.id
