@@ -1,9 +1,8 @@
 import discord, os, asyncio, asyncpg
 from dotenv import load_dotenv
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ui import View, Button
-from datetime import datetime
-
+from datetime import datetime, UTC
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -65,7 +64,18 @@ async def on_ready():
     await init_db()
     print(f"✅ Logged in as {bot.user}!")
     bot.loop.create_task(heartbeat_task())
+    update_status.start()  # Start auto-updating status
 
+@tasks.loop(minutes=1)
+async def update_status():
+    # Get the current UTC timestamp properly
+    timestamp = int(datetime.now(UTC).timestamp())  # Now uses timezone-aware UTC
+
+    # Use Discord's timestamp format to show localized time
+    await bot.change_presence(activity=discord.Activity(
+        type=discord.ActivityType.watching, 
+        name=f"watching the servers.\n<t:{timestamp}:F>"
+    ))
 # ---------------- Help Commands ----------------
 @bot.command()
 async def help(ctx):
