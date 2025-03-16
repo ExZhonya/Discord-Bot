@@ -84,14 +84,12 @@ class Moderation(commands.Cog):
             embed.add_field(name="3. Love the owner.", value="Because i say so.", inline=False)
             await ctx.send(embed=embed)
         else:
-            msg = await ctx.send(f"⚠️ Use this command in <#{rules_channel_id}>!")
-            await ctx.message.delete(delay=5)
-            await msg.delete(delay=5)
+            await ctx.send(f"⚠️ Use this command in <#{rules_channel_id}>!", delete_after= 5)
 
     @commands.command()
     async def welcomepreview(self, ctx):
         if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send("You need the 'Manage Server' permission to use this command!")
+            await ctx.send("You need the 'Manage Server' permission to use this command!"delete_after = 5)
             return
 
         guild = ctx.guild
@@ -102,10 +100,6 @@ class Moderation(commands.Cog):
         rules_channel_id = await get_channel_id(self.bot, guild_id, "rules_channel")
         roles_channel_id = await get_channel_id(self.bot, guild_id, "role_channel")
         introduction_channel_id = await get_channel_id(self.bot, guild_id, "introduction_channel")
-
-        if not welcome_channel_id:
-            await ctx.send("⚠️ No welcome channel is set! Use `.setchannel welcome #channel` first.")
-            return
 
         current_time = discord.utils.utcnow().strftime("%I:%M %p")
         rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "<a:exclamation:1350752095720177684> Read the rules in the rules channel."
