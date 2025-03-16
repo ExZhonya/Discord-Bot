@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from ..utils.views import GameMenu
+from utils.views import GameMenu
 
 class Game(commands.Cog):
     def __init__(self, bot):
