@@ -17,20 +17,27 @@ class Game(commands.Cog):
                 "host": None,
                 "inventory": {},
                 "gold": {},
-                "has_started": False
+                "has_started": False,
+                "visibility": None  # New key: "public" or "private"
             }
         return self.games[guild_id]
 
-    # Slash Command: /game
     @app_commands.command(name="game", description="Start a new game session.")
-    async def game_slash(self, interaction: discord.Interaction):
-        await self.start_game(interaction.guild.id, interaction.user, interaction)
+    @app_commands.choices(visibility=[
+        app_commands.Choice(name="Public (Admin-only commands)", value="public"),
+        app_commands.Choice(name="Private (Host-only commands)", value="private")
+    ])
+    async def game_slash(self, interaction: discord.Interaction, visibility: app_commands.Choice[str]):
+        await self.start_game(interaction.guild.id, interaction.user, interaction, visibility.value)
 
     @commands.command()
-    async def game(self, ctx):
-        await self.start_game(ctx.guild.id, ctx.author, ctx)
+    async def game(self, ctx, visibility: str):
+        if visibility.lower() not in ["public", "private"]:
+            await ctx.send("⚠️ Please specify visibility: `public` or `private`. Example: `.game public`")
+            return
+        await self.start_game(ctx.guild.id, ctx.author, ctx, visibility.lower())
 
-    async def start_game(self, guild_id, user, interaction_or_ctx):
+    async def start_game(self, guild_id, user, interaction_or_ctx, visibility):
         game = self.get_game(guild_id)
         if game["active"]:
             await self._send(interaction_or_ctx, "A game is already active in this server!")
@@ -42,12 +49,13 @@ class Game(commands.Cog):
             "host": user.name,
             "inventory": {user.name: {"Weapon": None, "Armor": None, "Potion": None}},
             "gold": {user.name: 0},
-            "has_started": False
+            "has_started": False,
+            "visibility": visibility
         })
 
         embed = discord.Embed(
             title="Game Started! 🎮",
-            description="A new game session has begun. Use `/join` or `.join` to participate!",
+            description=f"A new **{visibility.capitalize()}** game session has begun. Use `/join` or `.join` to participate!",
             color=discord.Color.gold()
         )
         embed.add_field(name="Current Team Members", value="\n".join(game["team"]))
@@ -79,6 +87,8 @@ class Game(commands.Cog):
             return
         await self._send(interaction_or_ctx, embed=discord.Embed(title="Game Menu", description="Choose an option:", color=discord.Color.blue()), view=GameMenu(interaction_or_ctx, game))
 
+# ---------------- Join Commands ----------------
+
     @app_commands.command(name="join", description="Join the game")
     async def join_slash(self, interaction: discord.Interaction):
         await self.join_game(interaction.guild.id, interaction.user, interaction)
@@ -109,6 +119,52 @@ class Game(commands.Cog):
         embed.add_field(name="Current Team Members", value="\n".join(game["team"]))
         await self._send(interaction_or_ctx, embed=embed)
 
+# ---------------- Gold Commands ----------------
+
+    @app_commands.command(name="addgold", description="Give gold to a player")
+    @app_commands.describe(user="Target player", amount="Amount of gold to add")
+    async def addgold_slash(self, interaction: discord.Interaction, user: discord.Member, amount: int):
+        await self.add_gold(interaction.guild.id, interaction.user, interaction, user, amount)
+
+    @commands.command()
+    async def addgold(self, ctx, member: discord.Member, amount: int):
+        await self.add_gold(ctx.guild.id, ctx.author, ctx, member, amount)
+
+    async def add_gold(self, guild_id, caller, interaction_or_ctx, target_user, amount):
+        game = self.get_game(guild_id)
+
+        if not game["active"]:
+            await self._send(interaction_or_ctx, "No active game session.")
+            return
+
+        if game["visibility"] == "public":
+            if not caller.guild_permissions.administrator:
+                await self._send(interaction_or_ctx, "❌ Only an admin can add gold in a public game.")
+                return
+        elif game["visibility"] == "private":
+            if caller.name != game["host"]:
+                await self._send(interaction_or_ctx, "❌ Only the host can add gold in a private game.")
+                return
+
+        if target_user.name not in game["gold"]:
+            game["gold"][target_user.name] = 0
+        game["gold"][target_user.name] += amount
+
+        embed = discord.Embed(
+            title="💰 Gold Added",
+            description=f"{caller.name} gave **{amount} gold** to {target_user.name}.",
+            color=discord.Color.green()
+        )
+        embed.add_field(name="New Balance", value=f"{target_user.name} now has **{game['gold'][target_user.name]} gold**.", inline=False)
+
+        await self._send(interaction_or_ctx, embed=embed)
+
+    async def _send(self, ctx_or_interaction, content=None, embed=None, view=None):
+        if isinstance(ctx_or_interaction, discord.Interaction):
+            await ctx_or_interaction.response.send_message(content=content, embed=embed, view=view)
+        else:
+            await ctx_or_interaction.send(content=content, embed=embed, view=view)
+
     @app_commands.command(name="gold", description="Check your current gold")
     async def gold_slash(self, interaction: discord.Interaction):
         await self.check_gold(interaction.guild.id, interaction.user, interaction)
@@ -121,6 +177,8 @@ class Game(commands.Cog):
         game = self.get_game(guild_id)
         gold = game["gold"].get(user.name, 0)
         await self._send(interaction_or_ctx, f"💰 {user.name}, you have **{gold} gold**.")
+
+# ---------------- End Commands ----------------
 
     @app_commands.command(name="endgame", description="End the game (host only)")
     async def endgame_slash(self, interaction: discord.Interaction):
