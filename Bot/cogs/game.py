@@ -31,11 +31,12 @@ class Game(commands.Cog):
         await self.start_game(interaction.guild.id, interaction.user, interaction, visibility.value)
 
     @commands.command()
-    async def game(self, ctx, visibility: str):
-        if visibility.lower() not in ["public", "private"]:
+    async def game(self, ctx, visibility: str = None):
+        if not visibility or visibility.lower() not in ["public", "private"]:
             await ctx.send("⚠️ Please specify visibility: `public` or `private`. Example: `.game public`")
             return
         await self.start_game(ctx.guild.id, ctx.author, ctx, visibility.lower())
+
 
     async def start_game(self, guild_id, user, interaction_or_ctx, visibility):
         game = self.get_game(guild_id)
