@@ -22,7 +22,9 @@ async def init_db():
             guild_id BIGINT PRIMARY KEY,
             welcome_channel BIGINT DEFAULT NULL,
             rules_channel BIGINT DEFAULT NULL,
-            heartbeat_channel BIGINT DEFAULT NULL
+            heartbeat_channel BIGINT DEFAULT NULL,
+            roles_channel BIGINT DEFAULT NULL,
+            introduction_channel BIGINT DEFAULT NULL
         )
     """)
 
@@ -94,23 +96,58 @@ async def channelhelp(ctx):
         color=discord.Color.blue()
     )
 
+    embed.add_field(name=".setchannel <type> <channel>", value="Set your channel.", inline=False)
     embed.add_field(name=".setchannel welcome", value="Set your welcome channel.", inline=False)
     embed.add_field(name=".setchannel rules", value="Set your rules channel. use `.rules` to make a fix preset of rules.(TBC Soon)", inline=False)
     embed.add_field(name=".setchannel heartbeat", value="Set a heartbeat message of the bot's status.", inline=False)
+    embed.add_field(name=".setchannel role", value="Set your role selection channel.", inline=False)
+    embed.add_field(name=".setchannel introduction", value="Set your introduction channel", inline=False)
     await ctx.send(embed=embed)
 
 # ---------------- Events & Commands ----------------
 
 @bot.event
 async def on_member_join(member):
-    guild_id = member.guild.id
+    guild = member.guild
+    guild_id = guild.id
     welcome_channel_id = await get_channel_id(guild_id, "welcome_channel")
     rules_channel_id = await get_channel_id(guild_id, "rules_channel")
+    role_channel_id = await get_channel_id(guild_id, "role_channel")
+    introduction_channel_id = await get_channel_id(guild_id, "introduction_channel")
 
     if welcome_channel_id:
         welcome_channel = bot.get_channel(welcome_channel_id)
         if welcome_channel:
-            await welcome_channel.send(f"🎉 Welcome {member.mention} to the server!")
+            current_time = discord.utils.utcnow().strftime("%I:%M %p")
+
+            # Masked Links (if channels exist)
+            rules_link = f"[rules](https://discord.com/channels/{guild.id}/{rules_channel_id})" if rules_channel_id else "`N/A`"
+            roles_link = f"[roles](https://discord.com/channels/{guild.id}/{role_channel_id}"  if role_channel_id else "`N/A`"
+            intro_link = f"[introduction](https://discord.com/channels/{guild.id}/{introduction_channel_id}" if introduction_channel_id else "`N/A`"
+
+            # Embed Setup
+            embed = discord.Embed(
+                title=f"👋 Welcome, {member.name}!",
+                description="We're excited to see you here!\n\n"
+                            f"`Welcome to {guild.name}`\n\n"
+                            "📜 Read the rules in\n"
+                            f"{rules_link}\n\n"
+                            "🎭 Get yourself a role on\n"
+                            f"{roles_link}\n\n"
+                            "📢 Introduce yourself in\n"
+                            f"{intro_link}\n\n"
+                            "**Start having fun!** 🎉\n\n"
+                            "Enjoy your stay! If you have any questions, feel free to ask.",
+                color=discord.Color.green()
+            )
+
+            embed.set_author(name=guild.name, icon_url=guild.icon.url if guild.icon else discord.Embed.Empty)
+            embed.set_thumbnail(url=member.display_avatar.url)
+            embed.set_image(url="https://tenor.com/0hGx.gif")  # Example GIF
+            embed.set_footer(text=f"Today at {current_time}")
+
+            await welcome_channel.send(embed=embed)
+
 
     if rules_channel_id:
         rules_channel = bot.get_channel(rules_channel_id)
@@ -119,18 +156,43 @@ async def on_member_join(member):
             await asyncio.sleep(10)
             await msg.delete()
 
-@bot.command()
+async def ensure_guild_exists(guild_id):
+    """Ensures a guild entry exists in the database before modifying."""
+    await bot.db.execute("""
+        INSERT INTO channels (guild_id)
+        VALUES ($1)
+        ON CONFLICT (guild_id) DO NOTHING
+    """, guild_id)
+
+@bot.command()  #----------SETCHANNEL COMMANDS----------
 async def setchannel(ctx, channel_type: str, channel: discord.TextChannel):
-    if ctx.author.guild_permissions.administrator:
-        if channel_type.lower() not in ["welcome", "rules", "heartbeat"]:
-            await ctx.send("❌ Invalid type! Use `welcome`, `rules`, or `heartbeat`.")
-            return
-        
-        column_name = f"{channel_type.lower()}_channel"
-        await set_channel_id(ctx.guild.id, column_name, channel.id)
-        await ctx.send(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!")
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.send("❌ You need admin permissions!", delete_after=3)
+        return
+
+    if channel_type.lower() not in ["welcome", "rules", "heartbeat"]:
+        await ctx.send("❌ Invalid type! Use `welcome`, `rules`, or `heartbeat`.", delete_after=3)
+        return
+
+    column_name = f"{channel_type.lower()}_channel"
+    guild_id = ctx.guild.id
+
+    await ensure_guild_exists(guild_id)
+
+    current_channel_id = await get_channel_id(guild_id, column_name)
+
+    if current_channel_id == channel.id:
+        await remove_channel_id(guild_id, column_name)
+        await ctx.send(f"✅ {channel_type.capitalize()} has been removed from {channel.mention}.")
     else:
-        await ctx.send("❌ You need admin permissions!")
+        await set_channel_id(guild_id, column_name, channel.id)
+        await ctx.send(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!")
+
+async def remove_channel_id(guild_id, column_name):
+    """Removes the specified channel by setting it to NULL."""
+    await bot.db.execute(f"UPDATE channels SET {column_name} = NULL WHERE guild_id = $1", guild_id)
+
+
 
 @bot.command()
 async def rules(ctx):
