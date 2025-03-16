@@ -67,7 +67,11 @@ class Game(commands.Cog):
         await self.open_menu(interaction.guild.id, interaction.user, interaction)
 
     @commands.command()
-    async def start(self, ctx):
+    async def start(self, ctx, guild_id, interaction_or_ctx):
+        game = self.get_game(guild_id)
+        if game["has_started"]:
+            await self._send(interaction_or_ctx, "A game is already active in this server!")
+            return
         await self.open_menu(ctx.guild.id, ctx.author, ctx)
 
     @app_commands.command(name="menu", description="Open the game menu (host only)")
