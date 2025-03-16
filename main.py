@@ -74,7 +74,7 @@ async def help(ctx):
     embed.add_field(name=".setchannel", value="(Admin) Set welcome, rules, or heartbeat channels.", inline=False)
     await ctx.send(embed=embed)
 
-bot.command()
+@bot.command()
 async def gamehelp(ctx):
     embed = discord.Embed(
         title="Game Help",
