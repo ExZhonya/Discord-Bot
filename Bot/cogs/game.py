@@ -122,13 +122,16 @@ class Game(commands.Cog):
 
 # ---------------- Gold Commands ----------------
 
-    @app_commands.command(name="addgold", description="Give gold to a player")
-    @app_commands.describe(user="Target player", amount="Amount of gold to add")
+    @app_commands.command(name="addgold", description="Give gold to a player (requires @user and amount)")
+    @app_commands.describe(user="Mention a player", amount="Amount of gold (required)")
     async def addgold_slash(self, interaction: discord.Interaction, user: discord.Member, amount: int):
         await self.add_gold(interaction.guild.id, interaction.user, interaction, user, amount)
 
     @commands.command()
-    async def addgold(self, ctx, member: discord.Member, amount: int):
+    async def addgold(self, ctx, member: discord.Member = None, amount: int = None):
+        if not member or amount is None:
+            await ctx.send("⚠️ Usage: `.addgold @user <amount>`")
+            return
         await self.add_gold(ctx.guild.id, ctx.author, ctx, member, amount)
 
     async def add_gold(self, guild_id, caller, interaction_or_ctx, target_user, amount):
@@ -161,10 +164,19 @@ class Game(commands.Cog):
         await self._send(interaction_or_ctx, embed=embed)
 
     async def _send(self, ctx_or_interaction, content=None, embed=None, view=None):
+        guild_id = ctx_or_interaction.guild.id if isinstance(ctx_or_interaction, discord.Interaction) else ctx_or_interaction.guild.id
+        if guild_id in self.last_message:
+            try:
+                await self.last_message[guild_id].delete()
+            except:
+                pass
+
         if isinstance(ctx_or_interaction, discord.Interaction):
-            await ctx_or_interaction.response.send_message(content=content, embed=embed, view=view)
+            msg = await ctx_or_interaction.channel.send(content=content, embed=embed, view=view)
         else:
-            await ctx_or_interaction.send(content=content, embed=embed, view=view)
+            msg = await ctx_or_interaction.send(content=content, embed=embed, view=view)
+
+        self.last_message[guild_id] = msg
 
     @app_commands.command(name="gold", description="Check your current gold")
     async def gold_slash(self, interaction: discord.Interaction):
