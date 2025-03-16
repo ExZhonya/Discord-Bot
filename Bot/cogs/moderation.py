@@ -21,11 +21,14 @@ class Moderation(commands.Cog):
         app_commands.Choice(name="Role", value="role"),
         app_commands.Choice(name="Introduction", value="introduction")
     ])
+
+# ---------------- Slash Commands ----------------
+
     async def setchannel_slash(self, interaction: discord.Interaction, 
                                channel_type: app_commands.Choice[str], 
                                channel: discord.TextChannel):
 
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.manage_guild:
             await interaction.response.send_message("❌ You need admin permissions!", ephemeral=True)
             return
 
@@ -41,10 +44,10 @@ class Moderation(commands.Cog):
             await set_channel_id(self.bot, guild_id, column_name, channel.id)
             await interaction.response.send_message(f"✅ `{channel_type.name}` set to {channel.mention}!", ephemeral=False)
 
-    # Legacy dot command version
+# ---------------- Text Commands ----------------
     @commands.command()
     async def setchannel(self, ctx, channel_type: str, channel: discord.TextChannel):
-        if not ctx.author.guild_permissions.administrator:
+        if not ctx.author.guild_permissions.manage_guild:
             await ctx.send("❌ You need admin permissions!", delete_after=3)
             return
 

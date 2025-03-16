@@ -71,16 +71,12 @@ class Game(commands.Cog):
         if not game["active"]:
             await self._send(interaction, "No active game! Use `/game` or `.game` first.")
             return
-
         if user.name != game["host"]:
             await self._send(interaction, "Only the host can start the game!")
             return
-
         if game["has_started"]:
             await self._send(interaction, "The game has already started!")
             return
-
-        # Mark the game as started
         game["has_started"] = True
 
         await self.open_menu(guild_id, user, interaction)
@@ -101,7 +97,6 @@ class Game(commands.Cog):
         if game["has_started"]:
             await self._send(ctx, "The game has already started!")
             return
-
         game["has_started"] = True
 
         await self.open_menu(guild_id, user, ctx)

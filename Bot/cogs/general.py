@@ -46,10 +46,11 @@ class General(commands.Cog):
             title="Game Help",
             color=discord.Color.blue()
         )
-        embed.add_field(name=".game", value="Use this to start a game.", inline=False)
+        embed.add_field(name=".game <type>", value="Use this to start a game. Public | Private", inline=False)
         embed.add_field(name=".start", value="Start the game.", inline=False)
         embed.add_field(name=".endgame", value="Use this to end an existing game.", inline=False)
         embed.add_field(name=".menu", value="Open the Game's Menu.", inline=False)
+        embed.add_field(name=".addgold <@user> <value>", value="Add a player's gold.", inline=False)
         await ctx.send(embed=embed)
 
     @commands.command()
