@@ -18,34 +18,16 @@ bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
 async def init_db():
     bot.db = await asyncpg.connect(DATABASE_URL)
-
-    # Ensure the table exists
     await bot.db.execute("""
         CREATE TABLE IF NOT EXISTS channels (
             guild_id BIGINT PRIMARY KEY,
             welcome_channel BIGINT DEFAULT NULL,
             rules_channel BIGINT DEFAULT NULL,
-            heartbeat_channel BIGINT DEFAULT NULL
+            heartbeat_channel BIGINT DEFAULT NULL,
+            role_channel BIGINT DEFAULT NULL,
+            introduction_channel BIGINT DEFAULT NULL
         )
     """)
-
-    # Check if "roles_channel" exists and rename it to "role_channel"
-    column_exists = await bot.db.fetchval("""
-        SELECT EXISTS (
-            SELECT 1 FROM information_schema.columns 
-            WHERE table_name = 'channels' AND column_name = 'roles_channel'
-        )
-    """)
-
-    if column_exists:
-        print("Renaming 'roles_channel' to 'role_channel'...")
-        await bot.db.execute("ALTER TABLE channels RENAME COLUMN roles_channel TO role_channel")
-        print("Column renamed successfully!")
-
-    # Add missing columns if they don't exist
-    await bot.db.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS role_channel BIGINT DEFAULT NULL")
-    await bot.db.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS introduction_channel BIGINT DEFAULT NULL")
-
     print("Database initialization complete!")
 
 
@@ -134,7 +116,7 @@ async def on_member_join(member):
     guild_id = guild.id
     welcome_channel_id = await get_channel_id(guild_id, "welcome_channel")
     rules_channel_id = await get_channel_id(guild_id, "rules_channel")
-    roles_channel_id = await get_channel_id(guild_id, "roles_channel")
+    roles_channel_id = await get_channel_id(guild_id, "role_channel")
     introduction_channel_id = await get_channel_id(guild_id, "introduction_channel")
 
     if welcome_channel_id:
@@ -186,7 +168,7 @@ async def previewwelcome(ctx):
     # Fetch channel IDs
     welcome_channel_id = await get_channel_id(guild_id, "welcome_channel")
     rules_channel_id = await get_channel_id(guild_id, "rules_channel")
-    roles_channel_id = await get_channel_id(guild_id, "roles_channel")
+    roles_channel_id = await get_channel_id(guild_id, "role_channel")
     introduction_channel_id = await get_channel_id(guild_id, "introduction_channel")
 
     if not welcome_channel_id:
