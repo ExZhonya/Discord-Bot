@@ -1,7 +1,7 @@
 # /cogs/game.py
 import discord
 from discord.ext import commands
-from utils.views import GameMenu, ShopMenu, InventoryMenu, WeaponShop
+from utils.views import GameMenu, ShopMenu, WeaponShop
 
 class Game(commands.Cog):
     def __init__(self, bot):

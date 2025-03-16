@@ -13,24 +13,21 @@ class GameMenu(View):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can start!", ephemeral=True)
             return
-        await interaction.message.delete()
-        await interaction.channel.send("🌍 The adventure begins!")
+        await interaction.response.edit_message(content="🌍 The adventure begins!", embed=None, view=None)
 
     @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
     async def shop_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
             return
-        await interaction.message.delete()
-        await interaction.channel.send(embed=discord.Embed(title="Shop Menu", description="Choose a category:", color=discord.Color.purple()), view=ShopMenu(self.interaction, self.game))
+        await interaction.response.edit_message(embed=self.build_shop_embed(), view=ShopMenu(self.interaction, self.game))
 
     @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
     async def inventory_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
             return
-        await interaction.message.delete()
-        await interaction.channel.send(embed=self.build_inventory_embed())
+        await interaction.response.edit_message(embed=self.build_inventory_embed(), view=self)
 
     def build_inventory_embed(self):
         embed = discord.Embed(title="Inventory List", color=discord.Color.blue())
@@ -44,6 +41,9 @@ class GameMenu(View):
             )
         return embed
 
+    def build_shop_embed(self):
+        return discord.Embed(title="Shop Menu", description="Choose a category:", color=discord.Color.purple())
+
 class ShopMenu(View):
     def __init__(self, interaction, game):
         super().__init__()
@@ -52,13 +52,11 @@ class ShopMenu(View):
 
     @discord.ui.button(label="Weapons", style=discord.ButtonStyle.primary)
     async def weapons_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.message.delete()
-        await interaction.channel.send(embed=self.build_weapon_shop_embed(), view=WeaponShop(self.interaction, self.game))
+        await interaction.response.edit_message(embed=self.build_weapon_shop_embed(), view=WeaponShop(self.interaction, self.game))
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
     async def back_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.message.delete()
-        await interaction.channel.send(embed=discord.Embed(title="Game Menu", description="Choose an option:", color=discord.Color.blue()), view=GameMenu(self.interaction, self.game))
+        await interaction.response.edit_message(embed=discord.Embed(title="Game Menu", description="Choose an option:", color=discord.Color.blue()), view=GameMenu(self.interaction, self.game))
 
     def build_weapon_shop_embed(self):
         embed = discord.Embed(title="Weapons Shop ⚔️", description="Choose an item to buy:", color=discord.Color.dark_gold())
@@ -87,8 +85,7 @@ class WeaponShop(View):
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
     async def back_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.message.delete()
-        await interaction.channel.send(embed=discord.Embed(title="Shop Menu", description="Choose a category:", color=discord.Color.purple()), view=ShopMenu(self.interaction, self.game))
+        await interaction.response.edit_message(embed=ShopMenu(self.interaction, self.game).build_weapon_shop_embed(), view=ShopMenu(self.interaction, self.game))
 
     async def buy_item(self, interaction: discord.Interaction, item_name, price):
         player_name = interaction.user.name
