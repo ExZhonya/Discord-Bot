@@ -18,16 +18,27 @@ bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
 async def init_db():
     bot.db = await asyncpg.connect(DATABASE_URL)
+
+    # Ensure the table exists
     await bot.db.execute("""
         CREATE TABLE IF NOT EXISTS channels (
             guild_id BIGINT PRIMARY KEY,
             welcome_channel BIGINT DEFAULT NULL,
             rules_channel BIGINT DEFAULT NULL,
-            heartbeat_channel BIGINT DEFAULT NULL,
-            role_channel BIGINT DEFAULT NULL,
-            introduction_channel BIGINT DEFAULT NULL
+            heartbeat_channel BIGINT DEFAULT NULL
         )
     """)
+
+    print("DEBUG: Attempting to add missing columns...")  # Debug message
+
+    # Add missing columns
+    try:
+        await bot.db.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS roles_channel BIGINT DEFAULT NULL")
+        await bot.db.execute("ALTER TABLE channels ADD COLUMN IF NOT EXISTS introduction_channel BIGINT DEFAULT NULL")
+        print("DEBUG: Columns added successfully!")  # Debug success
+    except Exception as e:
+        print(f"ERROR: Failed to add columns - {e}")  # Debug failure
+
 
 async def get_channel_id(guild_id, channel_type):
     row = await bot.db.fetchrow(f"SELECT {channel_type} FROM channels WHERE guild_id = $1", guild_id)
