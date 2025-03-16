@@ -73,6 +73,40 @@ async def update_status():
         type=discord.ActivityType.watching, 
         name=f"𝗪𝗮𝘁𝗰𝗵𝗶𝗻𝗴 𝘁𝗵𝗲 𝘀𝗲𝗿𝘃𝗲𝗿𝘀."
     ))
+
+# ---------------- Slash Commands ----------------
+@bot.tree.command(name="setchannel", description="(Admin) Set welcome, rules, heartbeat, role, or introduction channel.")
+@discord.app_commands.describe(
+    channel_type="Type of the channel to set (welcome, rules, heartbeat, role, introduction)",
+    channel="The channel you want to assign"
+)
+async def setchannel_slash(interaction: discord.Interaction, 
+                           channel_type: str, 
+                           channel: discord.TextChannel):
+
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("❌ You need admin permissions!", ephemeral=True)
+        return
+
+    valid_types = ["welcome", "rules", "heartbeat", "role", "introduction"]
+    if channel_type.lower() not in valid_types:
+        await interaction.response.send_message(f"❌ Invalid type! Use one of: `{', '.join(valid_types)}`.", ephemeral=True)
+        return
+
+    guild_id = interaction.guild.id
+    column_name = f"{channel_type.lower()}_channel"
+
+    await ensure_guild_exists(guild_id)
+    current_channel_id = await get_channel_id(guild_id, column_name)
+
+    if current_channel_id == channel.id:
+        await remove_channel_id(guild_id, column_name)
+        await interaction.response.send_message(f"✅ {channel_type.capitalize()} has been **removed** from {channel.mention}.", ephemeral=False)
+    else:
+        await set_channel_id(guild_id, column_name, channel.id)
+        await interaction.response.send_message(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!", ephemeral=False)
+
+
 # ---------------- Help Commands ----------------
 @bot.command()
 async def help(ctx):
@@ -115,6 +149,10 @@ async def channelhelp(ctx):
     embed.add_field(name=".setchannel role", value="Set your role selection channel.", inline=False)
     embed.add_field(name=".setchannel introduction", value="Set your introduction channel", inline=False)
     await ctx.send(embed=embed)
+
+
+
+
 
 # ---------------- Events & Commands ----------------
 
