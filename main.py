@@ -99,12 +99,17 @@ async def setchannel_slash(interaction: discord.Interaction,
     await ensure_guild_exists(guild_id)
     current_channel_id = await get_channel_id(guild_id, column_name)
 
+    # Safely cast to int if exists, else None
+    if current_channel_id is not None:
+        current_channel_id = int(current_channel_id)
+
     if current_channel_id == channel.id:
         await remove_channel_id(guild_id, column_name)
         await interaction.response.send_message(f"✅ {channel_type.capitalize()} has been **removed** from {channel.mention}.", ephemeral=False)
     else:
         await set_channel_id(guild_id, column_name, channel.id)
         await interaction.response.send_message(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!", ephemeral=False)
+
 
 
 # ---------------- Help Commands ----------------
@@ -150,10 +155,6 @@ async def channelhelp(ctx):
     embed.add_field(name=".setchannel introduction", value="Set your introduction channel", inline=False)
     await ctx.send(embed=embed)
 
-
-
-
-
 # ---------------- Events & Commands ----------------
 
 @bot.event
@@ -192,8 +193,6 @@ async def on_member_join(member):
             embed.set_footer(text=f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {current_time}")
 
             await welcome_channel.send(embed=embed)
-
-
 
     if rules_channel_id:
         rules_channel = bot.get_channel(rules_channel_id)
@@ -247,8 +246,6 @@ async def welcomepreview(ctx):
 
     await ctx.send(embed=embed)
 
-
-
 async def ensure_guild_exists(guild_id):
     """Ensures a guild entry exists in the database before modifying."""
     await bot.db.execute("""
@@ -284,8 +281,6 @@ async def setchannel(ctx, channel_type: str, channel: discord.TextChannel):
 async def remove_channel_id(guild_id, column_name):
     """Removes the specified channel by setting it to NULL."""
     await bot.db.execute(f"UPDATE channels SET {column_name} = NULL WHERE guild_id = $1", guild_id)
-
-
 
 @bot.command()
 async def rules(ctx):
