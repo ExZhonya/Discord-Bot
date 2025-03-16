@@ -116,16 +116,16 @@ def team_members():
     return "\n".join(f"{i + 1}. {name}" for i, name in enumerate(team)) if team else "No members yet."
 
 @bot.command()
-async def startgame(ctx):
+async def game(ctx):
     global game_active, host
     if game_active:
         await ctx.send("A game is already active!")
         return
 
-    team.clear()  # Reset team before starting
+    team.clear()
     game_active = True
-    host = ctx.author.name  # Save the host's name
-    team.append(host)  # Automatically add host to the team
+    host = ctx.author.name
+    team.append(host)
 
     embed = discord.Embed(
         title="Game Started! 🎮",
@@ -139,7 +139,7 @@ async def startgame(ctx):
 @bot.command()
 async def join(ctx):
     if not game_active:
-        await ctx.send("No active game! Use `.startgame` first.")
+        await ctx.send("No active game! Use `.game` first.")
         return
 
     player_name = ctx.author.name
@@ -161,9 +161,12 @@ async def join(ctx):
 @bot.command()
 async def start(ctx):
     if not game_active:
-        await ctx.send("No active game! Use `.startgame` first.")
+        await ctx.send("No active game! Use `.game` first.")
         return
 
+    await show_game_menu(ctx)
+
+async def show_game_menu(ctx):
     embed = discord.Embed(
         title="Game Menu",
         description="Choose an option:",
@@ -174,27 +177,31 @@ async def start(ctx):
         @discord.ui.button(label="Start", style=discord.ButtonStyle.green)
         async def start_button(self, interaction: discord.Interaction, button: Button):
             if interaction.user.name != host:
-                await interaction.response.send_message("Only the game host can start!", ephemeral=True)
+                await interaction.response.send_message("Only the host can start!", ephemeral=True)
                 return
-            await interaction.response.send_message("Adventure begins!")
+            await interaction.message.delete()
+            await interaction.channel.send("Adventure begins!")
 
         @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
         async def shop_button(self, interaction: discord.Interaction, button: Button):
             if interaction.user.name != host:
                 await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
                 return
-            await show_shop(interaction)
+            await interaction.message.delete()
+            await show_shop(interaction.channel)
 
         @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
         async def inventory_button(self, interaction: discord.Interaction, button: Button):
             if interaction.user.name != host:
                 await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
                 return
-            await show_inventory(interaction)
+            await interaction.message.delete()
+            await show_inventory(interaction.channel)
 
-    await ctx.send(embed=embed, view=GameMenu())
+    msg = await ctx.send(embed=embed, view=GameMenu())
+    await delete_previous(ctx, msg)
 
-async def show_inventory(interaction):
+async def show_inventory(channel):
     embed = discord.Embed(title="Inventory List", color=discord.Color.blue())
 
     for i, player in enumerate(team, start=1):
@@ -207,11 +214,13 @@ async def show_inventory(interaction):
     class InventoryMenu(View):
         @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
         async def back_button(self, interaction: discord.Interaction, button: Button):
-            await show_game_menu(interaction)
+            await interaction.message.delete()
+            await show_game_menu(interaction.channel)
 
-    await interaction.response.edit_message(embed=embed, view=InventoryMenu())
+    msg = await channel.send(embed=embed, view=InventoryMenu())
+    await delete_previous(channel, msg)
 
-async def show_shop(interaction):
+async def show_shop(channel):
     embed = discord.Embed(
         title="Shop Menu",
         description="Choose a category:",
@@ -221,7 +230,8 @@ async def show_shop(interaction):
     class ShopMenu(View):
         @discord.ui.button(label="Weapons", style=discord.ButtonStyle.primary)
         async def weapons_button(self, interaction: discord.Interaction, button: Button):
-            await interaction.response.edit_message(embed=discord.Embed(
+            await interaction.message.delete()
+            await channel.send(embed=discord.Embed(
                 title="Weapons Shop",
                 description="⚔️ Sword - 100g\n🏹 Bow - 150g\n🔨 Hammer - 200g",
                 color=discord.Color.dark_gold()
@@ -229,7 +239,8 @@ async def show_shop(interaction):
 
         @discord.ui.button(label="Armors", style=discord.ButtonStyle.primary)
         async def armors_button(self, interaction: discord.Interaction, button: Button):
-            await interaction.response.edit_message(embed=discord.Embed(
+            await interaction.message.delete()
+            await channel.send(embed=discord.Embed(
                 title="Armor Shop",
                 description="🛡️ Chainmail - 200g\n🧥 Leather Armor - 150g\n👑 Helmet - 100g",
                 color=discord.Color.dark_gold()
@@ -237,7 +248,8 @@ async def show_shop(interaction):
 
         @discord.ui.button(label="Potions", style=discord.ButtonStyle.primary)
         async def potions_button(self, interaction: discord.Interaction, button: Button):
-            await interaction.response.edit_message(embed=discord.Embed(
+            await interaction.message.delete()
+            await channel.send(embed=discord.Embed(
                 title="Potion Shop",
                 description="❤️ Health Potion - 50g\n🌀 Mana Potion - 75g\n⚡ Stamina Potion - 60g",
                 color=discord.Color.dark_gold()
@@ -245,40 +257,11 @@ async def show_shop(interaction):
 
         @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
         async def back_button(self, interaction: discord.Interaction, button: Button):
-            await show_game_menu(interaction)
+            await interaction.message.delete()
+            await show_game_menu(interaction.channel)
 
-    await interaction.response.edit_message(embed=embed, view=ShopMenu())
-
-async def show_game_menu(interaction):
-    embed = discord.Embed(
-        title="Game Menu",
-        description="Choose an option:",
-        color=discord.Color.blue()
-    )
-
-    class GameMenu(View):
-        @discord.ui.button(label="Start", style=discord.ButtonStyle.green)
-        async def start_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the game host can start!", ephemeral=True)
-                return
-            await interaction.response.send_message("Adventure begins!")
-
-        @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
-        async def shop_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
-                return
-            await show_shop(interaction)
-
-        @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
-        async def inventory_button(self, interaction: discord.Interaction, button: Button):
-            if interaction.user.name != host:
-                await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
-                return
-            await show_inventory(interaction)
-
-    await interaction.response.edit_message(embed=embed, view=GameMenu())
+    msg = await channel.send(embed=embed, view=ShopMenu())
+    await delete_previous(channel, msg)
 
 @bot.command()
 async def endgame(ctx):
@@ -299,6 +282,11 @@ async def endgame(ctx):
         color=discord.Color.red()
     )
     await ctx.send(embed=embed)
+
+async def delete_previous(ctx, msg):
+    async for message in ctx.channel.history(limit=5):
+        if message.author == bot.user and message.id != msg.id:
+            await message.delete()
 
 
 bot.run(TOKEN)
