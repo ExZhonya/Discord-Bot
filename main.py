@@ -70,7 +70,7 @@ async def on_ready():
 async def update_status():
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.watching, 
-        name=f"𝗪𝗮𝘁𝗰𝗵𝗶𝗻𝗴 𝘁𝗵𝗲 𝘀𝗲𝗿𝘃𝗲𝗿𝘀.."
+        name=f"𝗪𝗮𝘁𝗰𝗵𝗶𝗻𝗴 𝘁𝗵𝗲 𝘀𝗲𝗿𝘃𝗲𝗿𝘀."
     ))
 # ---------------- Help Commands ----------------
 @bot.command()
