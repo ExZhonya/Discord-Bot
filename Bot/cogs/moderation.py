@@ -89,7 +89,7 @@ class Moderation(commands.Cog):
     @commands.command()
     async def welcomepreview(self, ctx):
         if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send("You need the 'Manage Server' permission to use this command!"delete_after = 5)
+            await ctx.send("You need the 'Manage Server' permission to use this command!", delete_after = 5)
             return
 
         guild = ctx.guild
