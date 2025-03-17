@@ -8,7 +8,7 @@ class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # Slash Command for /setchannel
+# ---------------- Slash Commands ----------------
     @app_commands.command(name="setchannel", description="(Admin) Set welcome, rules, heartbeat, role, or introduction channel.")
     @app_commands.describe(
         channel_type="Select the type of channel to configure",
@@ -21,8 +21,6 @@ class Moderation(commands.Cog):
         app_commands.Choice(name="Role", value="role"),
         app_commands.Choice(name="Introduction", value="introduction")
     ])
-
-# ---------------- Slash Commands ----------------
 
     async def setchannel_slash(self, interaction: discord.Interaction, 
                                channel_type: app_commands.Choice[str], 
