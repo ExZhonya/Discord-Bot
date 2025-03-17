@@ -8,8 +8,6 @@ async def init_db(bot):
     DATABASE_URL = os.getenv('DATABASE_URL')
 
     bot.db = await asyncpg.connect(DATABASE_URL)
-
-    # Create base channels table
     await bot.db.execute("""
         CREATE TABLE IF NOT EXISTS channels (
             guild_id BIGINT PRIMARY KEY,
@@ -17,23 +15,12 @@ async def init_db(bot):
             rules_channel BIGINT DEFAULT NULL,
             heartbeat_channel BIGINT DEFAULT NULL,
             role_channel BIGINT DEFAULT NULL,
-            introduction_channel BIGINT DEFAULT NULL
+            introduction_channel BIGINT DEFAULT NULL,
+            log_channel BIGINT DEFAULT NULL,
+            list_channel BIGINT DEFAULT NULL
         )
     """)
 
-    # Dynamically add missing columns
-    existing_cols = await bot.db.fetch("SELECT column_name FROM information_schema.columns WHERE table_name = 'channels'")
-    existing_cols = [col['column_name'] for col in existing_cols]
-
-    if 'log_channel' not in existing_cols:
-        await bot.db.execute("ALTER TABLE channels ADD COLUMN log_channel BIGINT DEFAULT NULL;")
-        print("➕ Added 'log_channel' column to channels table.")
-
-    if 'list_channel' not in existing_cols:
-        await bot.db.execute("ALTER TABLE channels ADD COLUMN list_channel BIGINT DEFAULT NULL;")
-        print("➕ Added 'list_channel' column to channels table.")
-
-    # Create infractions table if missing
     await bot.db.execute("""
         CREATE TABLE IF NOT EXISTS infractions (
             id SERIAL PRIMARY KEY,
@@ -47,7 +34,6 @@ async def init_db(bot):
     """)
 
     print("✅ Database initialized!")
-
 
 async def get_channel_id(bot, guild_id, channel_type):
     row = await bot.db.fetchrow(f"SELECT {channel_type} FROM channels WHERE guild_id = $1", guild_id)
