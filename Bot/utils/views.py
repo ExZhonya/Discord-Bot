@@ -13,21 +13,24 @@ class GameMenu(View):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can start!", ephemeral=True)
             return
-        await interaction.response.edit_message(content="🌍 The adventure begins!", embed=None, view=None)
+        await interaction.message.delete()
+        await interaction.channel.send(content="🌍 The adventure begins!")
 
     @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
     async def shop_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
             return
-        await interaction.response.edit_message(embed=self.build_shop_embed(), view=ShopMenu(self.interaction, self.game))
+        await interaction.message.delete()
+        await interaction.channel.send(embed=self.build_shop_embed(), view=ShopMenu(self.interaction, self.game))
 
     @discord.ui.button(label="Inventory", style=discord.ButtonStyle.gray)
     async def inventory_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
             return
-        await interaction.response.edit_message(embed=self.build_inventory_embed(), view=self)
+        await interaction.message.delete()
+        await interaction.channel.send(embed=self.build_inventory_embed(), view=self)
 
     def build_inventory_embed(self):
         embed = discord.Embed(title="Inventory List", color=discord.Color.blue())
@@ -52,19 +55,23 @@ class ShopMenu(View):
 
     @discord.ui.button(label="Weapons", style=discord.ButtonStyle.primary)
     async def weapons_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.edit_message(embed=self.build_weapon_shop_embed(), view=WeaponShop(self.interaction, self.game))
+        await interaction.message.delete()
+        await interaction.channel.send(embed=self.build_weapon_shop_embed(), view=WeaponShop(self.interaction, self.game))
 
     @discord.ui.button(label="Armor", style=discord.ButtonStyle.primary)
     async def armor_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.edit_message(embed=self.build_armor_shop_embed(), view=ArmorShop(self.interaction, self.game))
+        await interaction.message.delete()
+        await interaction.channel.send(embed=self.build_armor_shop_embed(), view=ArmorShop(self.interaction, self.game))
 
     @discord.ui.button(label="Potions", style=discord.ButtonStyle.primary)
     async def potions_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.edit_message(embed=self.build_potion_shop_embed(), view=PotionShop(self.interaction, self.game))
+        await interaction.message.delete()
+        await interaction.channel.send(embed=self.build_potion_shop_embed(), view=PotionShop(self.interaction, self.game))
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
     async def back_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.edit_message(embed=discord.Embed(title="Game Menu", description="Choose an option:", color=discord.Color.blue()), view=GameMenu(self.interaction, self.game))
+        await interaction.message.delete()
+        await interaction.channel.send(embed=discord.Embed(title="Game Menu", description="Choose an option:", color=discord.Color.blue()), view=GameMenu(self.interaction, self.game))
 
     def build_weapon_shop_embed(self):
         embed = discord.Embed(title="Weapons Shop ⚔️", description="Choose an item to buy:", color=discord.Color.dark_gold())
@@ -107,7 +114,8 @@ class WeaponShop(View):
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
     async def back_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.edit_message(embed=ShopMenu(self.interaction, self.game).build_weapon_shop_embed(), view=ShopMenu(self.interaction, self.game))
+        await interaction.message.delete()
+        await interaction.channel.send(embed=ShopMenu(self.interaction, self.game).build_weapon_shop_embed(), view=ShopMenu(self.interaction, self.game))
 
     async def buy_item(self, interaction: discord.Interaction, item_name, price):
         player_name = interaction.user.name
@@ -121,7 +129,6 @@ class WeaponShop(View):
         self.game["inventory"][player_name]["Weapon"] = item_name
 
         await interaction.response.send_message(f"✅ {player_name} bought a **{item_name}** for {price} gold!", ephemeral=False)
-
 
 class ArmorShop(View):
     def __init__(self, interaction, game):
@@ -143,7 +150,8 @@ class ArmorShop(View):
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
     async def back_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.edit_message(embed=ShopMenu(self.interaction, self.game).build_armor_shop_embed(), view=ShopMenu(self.interaction, self.game))
+        await interaction.message.delete()
+        await interaction.channel.send(embed=ShopMenu(self.interaction, self.game).build_armor_shop_embed(), view=ShopMenu(self.interaction, self.game))
 
     async def buy_item(self, interaction: discord.Interaction, item_name, price):
         player_name = interaction.user.name
@@ -157,7 +165,6 @@ class ArmorShop(View):
         self.game["inventory"][player_name]["Armor"] = item_name
 
         await interaction.response.send_message(f"✅ {player_name} bought **{item_name}** for {price} gold!", ephemeral=False)
-
 
 class PotionShop(View):
     def __init__(self, interaction, game):
@@ -179,7 +186,8 @@ class PotionShop(View):
 
     @discord.ui.button(label="Back", style=discord.ButtonStyle.danger)
     async def back_button(self, interaction: discord.Interaction, button: Button):
-        await interaction.response.edit_message(embed=ShopMenu(self.interaction, self.game).build_potion_shop_embed(), view=ShopMenu(self.interaction, self.game))
+        await interaction.message.delete()
+        await interaction.channel.send(embed=ShopMenu(self.interaction, self.game).build_potion_shop_embed(), view=ShopMenu(self.interaction, self.game))
 
     async def buy_item(self, interaction: discord.Interaction, item_name, price):
         player_name = interaction.user.name
