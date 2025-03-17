@@ -81,7 +81,6 @@ class General(commands.Cog):
         embed.add_field(name=".setchannel heartbeat", value="Set a heartbeat message of the bot's status.", inline=False)
         embed.add_field(name=".setchannel role", value="Set your role selection channel.", inline=False)
         embed.add_field(name=".setchannel introduction", value="Set your introduction channel.", inline=False)
-        embed.add_field(name=".setchannel log", value="Set your mod actions.", inline=False)
         embed.add_field(name=".setchannel list", value="Set your member infractions.", inline=False)
         await ctx.send(embed=embed)
 
