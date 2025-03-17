@@ -184,6 +184,9 @@ class Moderation(commands.Cog):
         log_channel_id = await get_channel_id(self.bot, guild_id, "log_channel")
         list_channel_id = await get_channel_id(self.bot, guild_id, "list_channel")
 
+        # ✅ DB logging here
+        await log_infraction(self.bot, guild_id, member.id, ctx.author.id, action, reason, int(time.time()))
+
         # Mod Log Text
         if log_channel_id:
             log_channel = ctx.guild.get_channel(log_channel_id)
@@ -202,6 +205,7 @@ class Moderation(commands.Cog):
             embed.add_field(name="Duration", value=f"<t:{now}:F>{f' | Expires: {duration}' if duration else ''}", inline=False)
             embed.add_field(name="Reason", value=reason, inline=False)
             await list_channel.send(embed=embed)
+
 
     # MUTE Command
     @commands.command()
@@ -261,8 +265,8 @@ class Moderation(commands.Cog):
         await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
         await self.mod_log(ctx, "Warned", member, reason)
 
-    @commands.command()
-    async def infractions(self, ctx, member: discord.Member):
+    @commands.command(name="infraction")
+    async def infraction(self, ctx, member: discord.Member):
         records = await get_infractions(self.bot, ctx.guild.id, member.id)
         if not records:
             await ctx.send(f"No infractions found for {member}.")
@@ -301,6 +305,7 @@ class Moderation(commands.Cog):
             return embed
 
         await ctx.send(embed=make_embed(0), view=InfractionView())
+
 
 
 
