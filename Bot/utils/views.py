@@ -2,7 +2,7 @@
 import discord
 from discord.ui import View, Button
 
-#"""IMPORTANT NOTE: ALWAYS MAKE THE FUNCTIONS SEND A NEW MESSAGE INSTEAD OF EDITING!"""
+#"""!!!IMPORTANT!!! ALWAYS MAKE THE FUNCTIONS SEND A NEW MESSAGE INSTEAD OF EDITING!"""
 
 
 class GameMenu(View):
