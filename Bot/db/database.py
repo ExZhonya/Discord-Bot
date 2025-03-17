@@ -15,9 +15,24 @@ async def init_db(bot):
             rules_channel BIGINT DEFAULT NULL,
             heartbeat_channel BIGINT DEFAULT NULL,
             role_channel BIGINT DEFAULT NULL,
-            introduction_channel BIGINT DEFAULT NULL
+            introduction_channel BIGINT DEFAULT NULL,
+            log_channel BIGINT DEFAULT NULL,
+            list_channel BIGINT DEFAULT NULL
         )
     """)
+
+    await bot.db.execute("""
+        CREATE TABLE IF NOT EXISTS infractions (
+            id SERIAL PRIMARY KEY,
+            guild_id BIGINT NOT NULL,
+            user_id BIGINT NOT NULL,
+            mod_id BIGINT NOT NULL,
+            action TEXT NOT NULL,
+            reason TEXT,
+            timestamp BIGINT
+        )
+    """)
+
     print("✅ Database initialized!")
 
 async def get_channel_id(bot, guild_id, channel_type):
@@ -52,3 +67,18 @@ async def heartbeat_task(bot):
                 if channel:
                     await channel.send("💓 Heartbeat: Bot is still alive!")
         await asyncio.sleep(900)
+
+async def log_infraction(bot, guild_id, user_id, mod_id, action, reason, timestamp):
+    await bot.db.execute("""
+        INSERT INTO infractions (guild_id, user_id, mod_id, action, reason, timestamp)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    """, guild_id, user_id, mod_id, action, reason, timestamp)
+
+async def get_infractions(bot, guild_id, user_id):
+    rows = await bot.db.fetch("""
+        SELECT id, guild_id, user_id, mod_id, action, reason, timestamp
+        FROM infractions
+        WHERE guild_id = $1 AND user_id = $2
+        ORDER BY timestamp DESC
+    """, guild_id, user_id)
+    return [dict(r) for r in rows]
