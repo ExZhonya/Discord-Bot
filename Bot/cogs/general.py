@@ -128,7 +128,7 @@ class General(commands.Cog):
             description=f"**Time Remaining:** <t:{end_time}:R>\n\n**Hosted by:** {ctx.author.mention}",
             color=discord.Color.gold()
         )
-        embed.set_footer(text=f"{winners} winner(s) | Ends at | {time.strftime('%I:%M %p', time.localtime(end_time))}")
+        embed.set_footer(text=f"{winners} winner(s) | Ends at | <t:{end_time}:R>")
 
         view = self.GiveawayView(timeout=total_seconds)
         await channel.send(embed=embed, view=view)
