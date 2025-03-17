@@ -8,6 +8,8 @@ async def init_db(bot):
     DATABASE_URL = os.getenv('DATABASE_URL')
 
     bot.db = await asyncpg.connect(DATABASE_URL)
+
+    # Auto create channels table
     await bot.db.execute("""
         CREATE TABLE IF NOT EXISTS channels (
             guild_id BIGINT PRIMARY KEY,
@@ -15,23 +17,37 @@ async def init_db(bot):
             rules_channel BIGINT DEFAULT NULL,
             heartbeat_channel BIGINT DEFAULT NULL,
             role_channel BIGINT DEFAULT NULL,
-            introduction_channel BIGINT DEFAULT NULL,
-            log_channel BIGINT DEFAULT NULL,
-            list_channel BIGINT DEFAULT NULL
+            introduction_channel BIGINT DEFAULT NULL
         )
     """)
 
-    await bot.db.execute("""
-        CREATE TABLE IF NOT EXISTS infractions (
-            id SERIAL PRIMARY KEY,
-            guild_id BIGINT NOT NULL,
-            user_id BIGINT NOT NULL,
-            mod_id BIGINT NOT NULL,
-            action TEXT NOT NULL,
-            reason TEXT,
-            timestamp BIGINT
-        )
-    """)
+    # Dynamically add missing columns to channels table
+    existing_cols = await bot.db.fetch("SELECT column_name FROM information_schema.columns WHERE table_name = 'channels'")
+    existing_cols = [col['column_name'] for col in existing_cols]
+
+    if 'log_channel' not in existing_cols:
+        await bot.db.execute("ALTER TABLE channels ADD COLUMN log_channel BIGINT DEFAULT NULL;")
+        print("➕ Added 'log_channel' column to channels table.")
+
+    if 'list_channel' not in existing_cols:
+        await bot.db.execute("ALTER TABLE channels ADD COLUMN list_channel BIGINT DEFAULT NULL;")
+        print("➕ Added 'list_channel' column to channels table.")
+
+    # Dynamically create infractions table if missing
+    table_check = await bot.db.fetch("SELECT to_regclass('public.infractions') AS exists")
+    if not table_check[0]['exists']:
+        await bot.db.execute("""
+            CREATE TABLE infractions (
+                id SERIAL PRIMARY KEY,
+                guild_id BIGINT NOT NULL,
+                user_id BIGINT NOT NULL,
+                mod_id BIGINT NOT NULL,
+                action TEXT NOT NULL,
+                reason TEXT,
+                timestamp BIGINT
+            )
+        """)
+        print("✅ Created 'infractions' table dynamically.")
 
     print("✅ Database initialized!")
 
