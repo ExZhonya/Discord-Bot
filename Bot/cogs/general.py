@@ -67,5 +67,20 @@ class General(commands.Cog):
         embed.add_field(name=".setchannel introduction", value="Set your introduction channel.", inline=False)
         await ctx.send(embed=embed)
 
+
+    @commands.command()
+    async def avatar(self, ctx, member: discord.Member = None):
+        member = member or ctx.author  # fallback to author if no member mentioned
+
+        embed = discord.Embed(
+            title=f"🖼️ Avatar for {member.display_name}",
+            color=discord.Color.blurple()
+        )
+        embed.set_image(url=member.display_avatar.url)
+        embed.set_footer(text=f"Requested by {ctx.author.display_name}")
+
+        await ctx.send(embed=embed)
+
+
 async def setup(bot):
     await bot.add_cog(General(bot))
