@@ -267,6 +267,10 @@ class Moderation(commands.Cog):
 
     @commands.command(name="infraction")
     async def infraction(self, ctx, member: discord.Member):
+        if not ctx.author.guild_permissions.manage_members:
+            await ctx.send("❌ You need the `Manage Members` permission to use this command.", delete_after=5)
+            return
+
         records = await get_infractions(self.bot, ctx.guild.id, member.id)
         if not records:
             await ctx.send(f"No infractions found for {member}.")
