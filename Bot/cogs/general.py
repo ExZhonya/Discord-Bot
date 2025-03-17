@@ -1,6 +1,7 @@
 # /cogs/general.py
-import discord
+import discord, random, asyncio, time
 from discord.ext import commands
+from discord.ui import View, Button
 
 class General(commands.Cog):
     def __init__(self, bot):
@@ -80,6 +81,46 @@ class General(commands.Cog):
         embed.set_footer(text=f"Requested by {ctx.author.display_name}")
 
         await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.has_permissions(manage_messages=True)
+    async def giveaway(self, ctx, duration: int, winners: int, *, prize: str):
+        """Starts a giveaway. Usage: .giveaway <duration_in_seconds> <number_of_winners> <prize>"""
+
+        end_time = int(time.time()) + duration
+        participants = set()
+
+        embed = discord.Embed(
+            title=f"🎉 {prize} 🎉",
+            description=f"**Time Remaining:** <t:{end_time}:R>\n\n**Hosted by:** {ctx.author.mention}",
+            color=discord.Color.gold()
+        )
+        embed.set_footer(text=f"{winners} winner(s) | Ends at | {time.strftime('%I:%M %p', time.localtime(end_time))}")
+
+        class GiveawayView(View):
+            def __init__(self, timeout):
+                super().__init__(timeout=timeout)
+
+            @discord.ui.button(label="🎉 Join Giveaway", style=discord.ButtonStyle.green)
+            async def join_button(self, interaction: discord.Interaction, button: Button):
+                if interaction.user.id not in participants:
+                    participants.add(interaction.user.id)
+                    await interaction.response.send_message("✅ You've joined the giveaway!", ephemeral=True)
+                else:
+                    await interaction.response.send_message("⚠️ You already joined!", ephemeral=True)
+
+        view = GiveawayView(timeout=duration)
+        await ctx.send(embed=embed, view=view)
+
+        await asyncio.sleep(duration)
+        view.stop()
+
+        if participants:
+            winners_list = random.sample(list(participants), min(winners, len(participants)))
+            winner_mentions = ", ".join(ctx.guild.get_member(w).mention for w in winners_list)
+            await ctx.send(f"🎉 Congratulations {winner_mentions}! You won **{prize}**!")
+        else:
+            await ctx.send("No one joined the giveaway 😢.")
 
 
 async def setup(bot):
