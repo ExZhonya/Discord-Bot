@@ -39,7 +39,21 @@ class General(commands.Cog):
         embed.add_field(name=".ping", value="Checks the bot's latency.", inline=False)
         embed.add_field(name=".info", value="Provides server information.", inline=False)
         embed.add_field(name=".gamehelp", value="List of Game's commands.", inline=False)
+        embed.add_field(name=".modhelp", value="List of admin's commands help.", inline=False)
+        embed.add_field(name=".giveaway", value="To create a Giveaway.", inline=False)
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def modhelp(self, ctx):
+        embed = discord.Embed(
+            title="Mod Help",
+            color=discord.Color.blue()
+        )
         embed.add_field(name=".channelhelp", value="(Admin) Set welcome, rules, or heartbeat channels.", inline=False)
+        embed.add_field(name=".infraction", value="To see Member's list of infractions.", inline=False)
+        embed.add_field(name=".mute", value="To mute a member.", inline=False)
+        embed.add_field(name=".kick", value="To kick a member.", inline=False)
+        embed.add_field(name=".ban", value="To ban a member.", inline=False)
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -67,6 +81,8 @@ class General(commands.Cog):
         embed.add_field(name=".setchannel heartbeat", value="Set a heartbeat message of the bot's status.", inline=False)
         embed.add_field(name=".setchannel role", value="Set your role selection channel.", inline=False)
         embed.add_field(name=".setchannel introduction", value="Set your introduction channel.", inline=False)
+        embed.add_field(name=".setchannel log", value="Set your mod actions.", inline=False)
+        embed.add_field(name=".setchannel list", value="Set your member infractions.", inline=False)
         await ctx.send(embed=embed)
 
 
