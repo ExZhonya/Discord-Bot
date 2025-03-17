@@ -51,6 +51,7 @@ class General(commands.Cog):
         )
         embed.add_field(name=".channelhelp", value="(Admin) Set welcome, rules, or heartbeat channels.", inline=False)
         embed.add_field(name=".infraction", value="To see Member's list of infractions.", inline=False)
+        embed.add_field(name=".clearinfractions", value="To clear member's infractions.", inline=False)
         embed.add_field(name=".mute", value="To mute a member.", inline=False)
         embed.add_field(name=".kick", value="To kick a member.", inline=False)
         embed.add_field(name=".ban", value="To ban a member.", inline=False)
