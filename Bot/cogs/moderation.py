@@ -310,6 +310,16 @@ class Moderation(commands.Cog):
 
         await ctx.send(embed=make_embed(0), view=InfractionView())
 
+    @commands.command(name="clearinfractions")
+    @commands.has_permissions(manage_guild=True)
+    async def clearinfractions(self, ctx, member: discord.Member):
+        await self.bot.db.execute("""
+            DELETE FROM infractions WHERE guild_id = $1 AND user_id = $2
+        """, ctx.guild.id, member.id)
+
+        await ctx.send(f"✅ Cleared all infractions for {member}.")
+
+
 
 
 
