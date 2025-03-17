@@ -1,7 +1,8 @@
 # /cogs/general.py
-import discord, random, asyncio, time
+import discord, random, asyncio, time, re
 from discord.ext import commands
 from discord.ui import View, Button
+from discord import TextChannel
 
 class General(commands.Cog):
     def __init__(self, bot):
@@ -82,13 +83,45 @@ class General(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
-    @commands.has_permissions(manage_messages=True)
-    async def giveaway(self, ctx, duration: int, winners: int, *, prize: str):
-        """Starts a giveaway. Usage: .giveaway <duration_in_seconds> <number_of_winners> <prize>"""
+    def parse_time(self, timestr: str) -> int:
+        """Parses time like 1h30m into seconds"""
+        time_units = {"m": 60, "h": 3600, "d": 86400, "mo": 2592000, "y": 31536000}
+        pattern = r"(\d+)([a-zA-Z]+)"
+        matches = re.findall(pattern, timestr)
+        total_seconds = 0
+        for value, unit in matches:
+            unit = unit.lower()
+            if unit in time_units:
+                total_seconds += int(value) * time_units[unit]
+        return total_seconds
 
-        end_time = int(time.time()) + duration
-        participants = set()
+    class GiveawayView(View):
+        def __init__(self, timeout):
+            super().__init__(timeout=timeout)
+            self.participants = set()
+
+        @discord.ui.button(label="🎉 Join Giveaway", style=discord.ButtonStyle.green)
+        async def join_button(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.id not in self.participants:
+                self.participants.add(interaction.user.id)
+                await interaction.response.send_message("✅ You've joined the giveaway!", ephemeral=True)
+            else:
+                await interaction.response.send_message("⚠️ You already joined!", ephemeral=True)
+
+    @commands.group()
+    @commands.has_permissions(manage_messages=True)
+    async def giveaway(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("❌ Usage: `.giveaway create <#channel> <winners> <duration> <prize>`")
+
+    @giveaway.command()
+    async def create(self, ctx, channel: TextChannel, winners: int, duration: str, *, prize: str):
+        total_seconds = self.parse_time(duration)
+        if total_seconds < 30:
+            await ctx.send("❌ Duration must be at least 30 seconds.")
+            return
+
+        end_time = int(time.time()) + total_seconds
 
         embed = discord.Embed(
             title=f"🎉 {prize} 🎉",
@@ -97,30 +130,18 @@ class General(commands.Cog):
         )
         embed.set_footer(text=f"{winners} winner(s) | Ends at | {time.strftime('%I:%M %p', time.localtime(end_time))}")
 
-        class GiveawayView(View):
-            def __init__(self, timeout):
-                super().__init__(timeout=timeout)
+        view = self.GiveawayView(timeout=total_seconds)
+        await channel.send(embed=embed, view=view)
 
-            @discord.ui.button(label="🎉 Join Giveaway", style=discord.ButtonStyle.green)
-            async def join_button(self, interaction: discord.Interaction, button: Button):
-                if interaction.user.id not in participants:
-                    participants.add(interaction.user.id)
-                    await interaction.response.send_message("✅ You've joined the giveaway!", ephemeral=True)
-                else:
-                    await interaction.response.send_message("⚠️ You already joined!", ephemeral=True)
-
-        view = GiveawayView(timeout=duration)
-        await ctx.send(embed=embed, view=view)
-
-        await asyncio.sleep(duration)
+        await asyncio.sleep(total_seconds)
         view.stop()
 
-        if participants:
-            winners_list = random.sample(list(participants), min(winners, len(participants)))
-            winner_mentions = ", ".join(ctx.guild.get_member(w).mention for w in winners_list)
-            await ctx.send(f"🎉 Congratulations {winner_mentions}! You won **{prize}**!")
+        if view.participants:
+            winner_ids = random.sample(list(view.participants), min(winners, len(view.participants)))
+            winner_mentions = ", ".join(ctx.guild.get_member(w).mention for w in winner_ids)
+            await channel.send(f"🎉 Congratulations {winner_mentions}! You won **{prize}**!")
         else:
-            await ctx.send("No one joined the giveaway 😢.")
+            await channel.send("No one joined the giveaway 😢.")
 
 
 async def setup(bot):
