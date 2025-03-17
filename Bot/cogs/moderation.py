@@ -120,5 +120,49 @@ class Moderation(commands.Cog):
 
         await ctx.send(embed=embed)
 
+
+@commands.command()
+@commands.has_permissions(manage_messages=True)
+async def purge(self, ctx, *args):
+    if not ctx.author.guild_permissions.manage_messages:
+        await ctx.send("❌ You need the `Manage Messages` permission to use this command.", delete_after=5)
+        return
+    
+    if len(args) == 0:
+        await ctx.send("❌ Usage: `.purge [@member] <amount>`", delete_after=5)
+        return
+
+
+    if len(args) == 1:
+        try:
+            limit = int(args[0])
+        except ValueError:
+            await ctx.send("❌ Please provide a valid number of messages to purge.", delete_after=5)
+            return
+        member = None
+
+    else:
+        try:
+            member = await commands.MemberConverter().convert(ctx, args[0])
+            limit = int(args[1])
+        except (commands.BadArgument, ValueError):
+            await ctx.send("❌ Usage: `.purge [@member] <amount>`", delete_after=5)
+            return
+
+    if limit > 100:
+        await ctx.send("❌ You can only purge up to 100 messages at a time.", delete_after=5)
+        return
+
+    def check(m):
+        return m.author == member if member else True
+
+    deleted = await ctx.channel.purge(limit=limit, check=check)
+    if member:
+        await ctx.send(f"✅ Deleted {len(deleted)} messages from {member.mention}.", delete_after=5)
+    else:
+        await ctx.send(f"✅ Deleted {len(deleted)} messages.", delete_after=5)
+
+
+
 async def setup(bot):
     await bot.add_cog(Moderation(bot))
