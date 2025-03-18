@@ -61,14 +61,15 @@ class Events(commands.Cog):
             embed = discord.Embed(
                 description=(
                     f"**Thanks for adding me to your server! 🥰**\n\n"
-                    "To play game, simply type `/game` or `.game` followed with `private` or `public` session!\n"
-                    "Want to see all of my command list? Then just do `.help` to see all of my available commands!\n"
+                    "To play game, simply type `/game` or `.game` followed with `private` or `public` session!\n\n"
+                    "Want to see all of my command list? Then just do `.help` to see all of my available commands!\n\n"
                     "If you have any questions or need assistance, feel free to join our [support server](https://discord.gg/Tfug7jMMRv)\n\n"
                     "**Thanks For Choosing Yuuki!**"
                 ),
                 color=discord.Color.pink()
             )
             embed.set_thumbnail(url=self.bot.user.avatar.url)
+            embed.set_footer(text="Yuuki Bot • Thanks for trusting me!", icon_url=self.bot.user.avatar.url)
             await channel.send(embed=embed)
 
 async def setup(bot):
