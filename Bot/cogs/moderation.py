@@ -320,10 +320,5 @@ class Moderation(commands.Cog):
         await ctx.send(f"✅ Cleared all infractions for {member}.")
 
 
-
-
-
-
-
 async def setup(bot):
     await bot.add_cog(Moderation(bot))
