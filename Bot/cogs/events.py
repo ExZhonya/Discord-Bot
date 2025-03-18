@@ -68,7 +68,7 @@ class Events(commands.Cog):
                 color=discord.Color.pink()
             )
             embed.set_thumbnail(url=self.bot.user.avatar.url)
-            embed.set_footer(text="Thanks for choosing Yuuki!", icon_url=self.bot.user.avatar.url)
+            embed.set_footer(text="\nThanks for choosing Yuuki!", icon_url=self.bot.user.avatar.url)
             await channel.send(embed=embed)
 
 async def setup(bot):
