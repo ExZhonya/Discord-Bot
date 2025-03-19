@@ -139,8 +139,9 @@ class General(commands.Cog):
             return
 
         now = utcnow()
-        end_timestamp = int(now.timestamp())
-        formatted = format_dt(now, "t")
+        end_time_dt = now + datetime.timedelta(seconds=total_seconds)
+        end_timestamp = int(end_time_dt.timestamp())
+        formatted = format_dt(end_time_dt, "t")
 
         embed = discord.Embed(
             title=f"🎉 {prize} 🎉",
