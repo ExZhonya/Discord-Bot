@@ -1,8 +1,9 @@
 # /cogs/general.py
-import discord, random, asyncio, time, re
+import discord, random, asyncio, time, re, datetime
 from discord.ext import commands
 from discord.ui import View, Button
 from discord import TextChannel
+from discord.utils import utcnow
 
 class General(commands.Cog):
     def __init__(self, bot):
@@ -137,14 +138,19 @@ class General(commands.Cog):
             await ctx.send("❌ Duration must be at least 30 seconds.")
             return
 
-        end_time = int(time.time()) + total_seconds
+        now = utcnow()
+        end_time_dt = now + datetime.timedelta(seconds=total_seconds)
+        end_timestamp = int(end_time_dt.timestamp())  # Unix timestamp
+
+        # Format for footer (human-readable)
+        formatted_end = end_time_dt.strftime('%Y-%m-%d %H:%M UTC')
 
         embed = discord.Embed(
             title=f"🎉 {prize} 🎉",
-            description=f"**Time Remaining:** <t:{end_time}:R>\n\n**Hosted by:** {ctx.author.mention}",
+            description=f"**Time Remaining:** <t:{end_timestamp}:R>\n\n**Hosted by:** {ctx.author.mention}",
             color=discord.Color.gold()
         )
-        embed.set_footer(text=f"{winners} winner(s) | Ends at | <t:{end_time}:R>")
+        embed.set_footer(text=f"{winners} winner(s) | Ends at | {formatted_end}")
 
         view = self.GiveawayView(timeout=total_seconds)
         await channel.send(embed=embed, view=view)
