@@ -3,7 +3,7 @@ import discord, random, asyncio, time, re, datetime
 from discord.ext import commands
 from discord.ui import View, Button
 from discord import TextChannel
-from discord.utils import utcnow
+from discord.utils import utcnow, format_dt
 
 class General(commands.Cog):
     def __init__(self, bot):
@@ -139,18 +139,15 @@ class General(commands.Cog):
             return
 
         now = utcnow()
-        end_time_dt = now + datetime.timedelta(seconds=total_seconds)
-        end_timestamp = int(end_time_dt.timestamp())  # Unix timestamp
-
-        # Format for footer (human-readable)
-        formatted_end = end_time_dt.strftime('%Y-%m-%d %H:%M UTC')
+        end_timestamp = int(now.timestamp())
+        formatted = format_dt(now, "t")
 
         embed = discord.Embed(
             title=f"🎉 {prize} 🎉",
             description=f"**Time Remaining:** <t:{end_timestamp}:R>\n\n**Hosted by:** {ctx.author.mention}",
             color=discord.Color.gold()
         )
-        embed.set_footer(text=f"{winners} winner(s) | Ends at | {formatted_end}")
+        embed.set_footer(text=f"{winners} winner(s) | Ends at | {formatted}")
 
         view = self.GiveawayView(timeout=total_seconds)
         await channel.send(embed=embed, view=view)
