@@ -175,9 +175,9 @@ class General(commands.Cog):
                 result = random.randint(1, max_num)
                 await ctx.send(f'🎲 {ctx.author.mention} You rolled **{result}**!')
             else:
-                await ctx.send('❌ Please use a number greater than 0 (e.g., `.roll d20`).')
+                await ctx.send('❌ Please use a number greater than 0!')
         else:
-            await ctx.send('❌ Invalid format! Use `.roll d<number>` (e.g., `.roll d6` or `.roll d20`).')
+            await ctx.send('❌ Invalid format! Use `.roll d<number>`')
 
 
 async def setup(bot):
