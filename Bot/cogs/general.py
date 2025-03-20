@@ -168,7 +168,7 @@ class General(commands.Cog):
             await channel.send("No one joined the giveaway 😢.")
 
     @commands.command()
-    async def roll(ctx, dice: str):
+    async def roll(self, ctx, dice: str):
         if dice.startswith('d') and dice[1:].isdigit():
             max_num = int(dice[1:])
             if max_num > 0:
