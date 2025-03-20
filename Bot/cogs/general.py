@@ -3,6 +3,7 @@ import discord, random, asyncio, time, re
 from discord.ext import commands
 from discord.ui import View, Button
 from discord import TextChannel
+from discord.utils import utcnow, format_dt
 
 class General(commands.Cog):
     def __init__(self, bot):
@@ -137,27 +138,46 @@ class General(commands.Cog):
             await ctx.send("❌ Duration must be at least 30 seconds.")
             return
 
-        end_time = int(time.time()) + total_seconds
+        now = utcnow()
+        end_timestamp = int((now.timestamp()) + total_seconds)
 
         embed = discord.Embed(
-            title=f"🎉 {prize} 🎉",
-            description=f"**Time Remaining:** <t:{end_time}:R>\n\n**Hosted by:** {ctx.author.mention}",
+            title="🎉 New Giveaway!",
+            description=(
+                f"**Prize:** {prize}\n"
+                f"**Winners:** {winners}\n"
+                f"**Hosted by:** {ctx.author.mention}\n"
+                f"**Time Remaining:** <t:{end_timestamp}:R>\n"
+                f"**Ends at:** <t:{end_timestamp}:t>"
+            ),
             color=discord.Color.gold()
         )
-        embed.set_footer(text=f"{winners} winner(s) | Ends at | <t:{end_time}:R>")
 
         view = self.GiveawayView(timeout=total_seconds)
         await channel.send(embed=embed, view=view)
+        await ctx.send(f"✅ Giveaway started in {channel.mention} for **{prize}**!")
 
         await asyncio.sleep(total_seconds)
         view.stop()
 
         if view.participants:
             winner_ids = random.sample(list(view.participants), min(winners, len(view.participants)))
-            winner_mentions = ", ".join(ctx.guild.get_member(w).mention for w in winner_ids)
+            winner_mentions = ", ".join(ctx.guild.get_member(w).mention for w in winner_ids if ctx.guild.get_member(w))
             await channel.send(f"🎉 Congratulations {winner_mentions}! You won **{prize}**!")
         else:
             await channel.send("No one joined the giveaway 😢.")
+
+    @commands.command()
+    async def roll(ctx, dice: str):
+        if dice.startswith('d') and dice[1:].isdigit():
+            max_num = int(dice[1:])
+            if max_num > 0:
+                result = random.randint(1, max_num)
+                await ctx.send(f'🎲 {ctx.author.mention} You rolled **{result}**!')
+            else:
+                await ctx.send('❌ Please use a number greater than 0 (e.g., `.roll d20`).')
+        else:
+            await ctx.send('❌ Invalid format! Use `.roll d<number>` (e.g., `.roll d6` or `.roll d20`).')
 
 
 async def setup(bot):
