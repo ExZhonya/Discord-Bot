@@ -32,7 +32,7 @@ class GameMenu(View):
         await interaction.message.delete()
         await interaction.channel.send(embed=self.build_shop_embed(), view=ShopMenu(self.interaction, self.game))
 
-    @discord.ui.button(label="📦: Inventory", style=discord.ButtonStyle.gray)
+    @discord.ui.button(label="📦 Inventory", style=discord.ButtonStyle.gray)
     async def inventory_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
