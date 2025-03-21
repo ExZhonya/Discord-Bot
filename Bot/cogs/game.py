@@ -21,6 +21,7 @@ class Game(commands.Cog):
                 "has_started": False,
                 "visibility": None  # New key: "public" or "private"
             }
+        print(f"Game state for {guild_id}: {self.games[guild_id]}")
         return self.games[guild_id]
     
     def default_player_data(self):
