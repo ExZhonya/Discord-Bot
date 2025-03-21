@@ -23,6 +23,44 @@ class GameMenu(View):
             view=NextStageButton(self.interaction, self.game)
         )
 
+    @discord.ui.button(label=":shopping_cart: Shop", style=discord.ButtonStyle.blurple)
+    async def shop_button(self, interaction: discord.Interaction, button: Button):
+        if interaction.user.name != self.game["host"]:
+            await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
+            return
+        await interaction.message.delete()
+        await interaction.channel.send(embed=self.build_shop_embed(), view=ShopMenu(self.interaction, self.game))
+
+    @discord.ui.button(label=":package: Inventory", style=discord.ButtonStyle.gray)
+    async def inventory_button(self, interaction: discord.Interaction, button: Button):
+        if interaction.user.name != self.game["host"]:
+            await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
+            return
+        await interaction.message.delete()
+        await interaction.channel.send(embed=self.build_inventory_embed(), view=self)
+
+    @discord.ui.button(label=":mage: Character", style=discord.ButtonStyle.primary)
+    async def character_button(self, interaction: discord.Interaction, button: Button):
+        if interaction.user.name != self.game["host"]:
+            await interaction.response.send_message("Only the host can view character menus!", ephemeral=True)
+            return
+        await interaction.message.delete()
+        for player in self.game["team"]:
+            await interaction.channel.send(f":video_game: **{player}'s Menu**", view=PlayerMenu(player, self.game))
+
+    def build_inventory_embed(self):
+        embed = discord.Embed(title="Inventory List", color=discord.Color.blue())
+        for player, items in self.game["inventory"].items():
+            embed.add_field(
+                name=f"{player} (:moneybag: {self.game['gold'].get(player, 0)} gold)",
+                value=f"**Weapon:** {items['Weapon'] or 'None'}\n**Armor:** {items['Armor'] or 'None'}\n**Potion:** {items['Potion'] or 'None'}",
+                inline=False
+            )
+        return embed
+
+    def build_shop_embed(self):
+        return discord.Embed(title="Shop Menu", description="Choose a category:", color=discord.Color.purple())
+
 
 class NextStageButton(View):
     def __init__(self, interaction, game):
@@ -54,7 +92,8 @@ async def send_stage_embed(interaction, game):
         return
 
     total_hp = sum(mob["hp"] for mob in stage_data["monsters"])
-    current_turn = game["team"][0]
+    current_index = game.get("current_turn_index", 0)
+    current_turn = game["team"][current_index % len(game["team"])]
 
     embed = discord.Embed(title="⚔️ Tower Progress Resumed!", color=discord.Color.gold())
     embed.add_field(name="🏰 Stage", value=f"{stage_num} ({stage_data['name']})", inline=False)
@@ -62,13 +101,10 @@ async def send_stage_embed(interaction, game):
     embed.add_field(name="🎯 Current Turn", value=f"{current_turn} (Player Turn)", inline=False)
     await interaction.channel.send(embed=embed)
 
-    for player in game["team"]:
-        await interaction.channel.send(
-            content=f"🎮 **{player}'s Menu**",
-            view=PlayerMenu(player, game)
-        )
-
-    game["current_stage"] = stage_num + 1
+    await interaction.channel.send(
+        content=f"🎮 **{current_turn}'s Menu**",
+        view=PlayerMenu(current_turn, game)
+    )
 
     @discord.ui.button(label="Shop", style=discord.ButtonStyle.blurple)
     async def shop_button(self, interaction: discord.Interaction, button: Button):
@@ -263,44 +299,17 @@ class PlayerMenu(View):
         self.player_name = player_name
         self.game = game
 
-        # Auto-generate stats structure if missing
-        if player_name not in self.game.get("team_data", {}):
-            if "team_data" not in self.game:
-                self.game["team_data"] = {}
-            self.game["team_data"][player_name] = {
-                "class": None,
-                "stats": {
-                    "HP": 100,
-                    "MP": 50,
-                    "Str": 1,
-                    "Int": 1,
-                    "Def": 1,
-                    "Dex": 1,
-                    "StatPoints": 1,
-                    "EXP": 0
-                }
-            }
-
     @discord.ui.button(label="🗡️ Attack", style=discord.ButtonStyle.red)
     async def attack(self, interaction: discord.Interaction, button: Button):
-        if interaction.user.name != self.player_name:
-            await interaction.response.send_message("This is not your menu!", ephemeral=True)
-            return
-        await interaction.channel.send(f"{self.player_name} chose to Attack!")
+        await self.take_action(interaction)
 
     @discord.ui.button(label="✨ Skills", style=discord.ButtonStyle.blurple)
     async def skills(self, interaction: discord.Interaction, button: Button):
-        if interaction.user.name != self.player_name:
-            await interaction.response.send_message("This is not your menu!", ephemeral=True)
-            return
-        await interaction.channel.send(f"{self.player_name} opens their Skills menu!")
+        await self.take_action(interaction)
 
     @discord.ui.button(label="🛡️ Defend", style=discord.ButtonStyle.grey)
     async def defend(self, interaction: discord.Interaction, button: Button):
-        if interaction.user.name != self.player_name:
-            await interaction.response.send_message("This is not your menu!", ephemeral=True)
-            return
-        await interaction.channel.send(f"{self.player_name} prepares to Defend!")
+        await self.take_action(interaction)
 
     @discord.ui.button(label="🎒 Bag", style=discord.ButtonStyle.green)
     async def bag(self, interaction: discord.Interaction, button: Button):
@@ -315,6 +324,13 @@ class PlayerMenu(View):
             await interaction.response.send_message("This is not your menu!", ephemeral=True)
             return
         await interaction.channel.send(view=CharacterMenu(self.player_name, self.game))
+
+    async def take_action(self, interaction):
+        if interaction.user.name != self.player_name:
+            await interaction.response.send_message("This is not your menu!", ephemeral=True)
+            return
+        self.game["current_turn_index"] = (self.game.get("current_turn_index", 0) + 1) % len(self.game["team"])
+        await send_stage_embed(interaction, self.game)
 
 
 class CharacterMenu(View):
@@ -364,6 +380,7 @@ class CharacterSelect(Select):
         embed.add_field(name="Stat Points Available", value=stats["StatPoints"])
         embed.add_field(name="EXP", value=f"{stats['EXP']}%")
         return embed
+
 
 async def continue_game_logic(ctx, game):
     # Resend current stage info
