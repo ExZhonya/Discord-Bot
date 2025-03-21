@@ -1,0 +1,18 @@
+{
+    "1": {
+      "name": "Goblin Camp",
+      "monsters": [
+        { "name": "Goblin", "hp": 50 },
+        { "name": "Goblin Archer", "hp": 70 }
+      ]
+    },
+    "2": {
+      "name": "Slime Horde",
+      "monsters": [
+        { "name": "Big Slime", "hp": 80 },
+        { "name": "Small Slime", "hp": 30 },
+        { "name": "Small Slime", "hp": 30 }
+      ]
+    }
+  }
+  
