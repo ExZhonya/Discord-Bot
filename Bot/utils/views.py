@@ -17,13 +17,14 @@ class GameMenu(View):
             await interaction.response.send_message("Only the host can start!", ephemeral=True)
             return
         self.game["current_stage"] = 1
+        self.game["current_turn_index"] = 0
         await interaction.message.delete()
         await interaction.channel.send(
             content="🧭 **The tower awaits...**",
             view=NextStageButton(self.interaction, self.game)
         )
 
-    @discord.ui.button(label=":shopping_cart: Shop", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="🛒 Shop", style=discord.ButtonStyle.blurple)
     async def shop_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can access the shop!", ephemeral=True)
@@ -31,7 +32,7 @@ class GameMenu(View):
         await interaction.message.delete()
         await interaction.channel.send(embed=self.build_shop_embed(), view=ShopMenu(self.interaction, self.game))
 
-    @discord.ui.button(label=":package: Inventory", style=discord.ButtonStyle.gray)
+    @discord.ui.button(label="📦: Inventory", style=discord.ButtonStyle.gray)
     async def inventory_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can check the inventory!", ephemeral=True)
@@ -39,7 +40,7 @@ class GameMenu(View):
         await interaction.message.delete()
         await interaction.channel.send(embed=self.build_inventory_embed(), view=self)
 
-    @discord.ui.button(label=":mage: Character", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="🧙 Character", style=discord.ButtonStyle.primary)
     async def character_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
             await interaction.response.send_message("Only the host can view character menus!", ephemeral=True)
@@ -60,6 +61,21 @@ class GameMenu(View):
 
     def build_shop_embed(self):
         return discord.Embed(title="Shop Menu", description="Choose a category:", color=discord.Color.purple())
+    
+    def build_character_embed(self, player_name):
+        player_data = self.game["team_data"].get(player_name, {"class": "None", "stats": {}})
+        stats = player_data.get("stats", {})
+        embed = discord.Embed(title=f"Character Sheet", color=discord.Color.gold())
+        embed.add_field(name="Name", value=f"<@{player_name}>", inline=False)
+        embed.add_field(name="Class", value=player_data.get("class", "None").capitalize() or "None", inline=False)
+        embed.add_field(name="HP", value=stats.get("HP", 0))
+        embed.add_field(name="MP", value=stats.get("MP", 0))
+        embed.add_field(name="Str", value=stats.get("Str", 0))
+        embed.add_field(name="Int", value=stats.get("Int", 0))
+        embed.add_field(name="Def", value=stats.get("Def", 0))
+        embed.add_field(name="Dex", value=stats.get("Dex", 0))
+        embed.add_field(name="Stats Available", value=stats.get("StatPoints", 0))
+        return embed
 
 
 class NextStageButton(View):
