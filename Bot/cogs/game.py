@@ -149,6 +149,7 @@ class Game(commands.Cog):
 
     async def join_game(self, guild_id, user, interaction_or_ctx):
         game = self.get_game(guild_id)
+
         if not game["active"]:
             await self._send(interaction_or_ctx, "No active game! Use `/game` or `.game` first.")
             return
@@ -157,11 +158,21 @@ class Game(commands.Cog):
             return
         if user.name in game["team"]:
             await self._send(interaction_or_ctx, f"{user.name}, you are already in the team!")
+            
+            # Debug print if user is in the team but not in team_data
+            print(f"User {user.name} is in game['team'], but checking game['team_data']: {game['team_data'].keys()}")
             return
+
+        print(f"Adding {user.name} to game['team_data']...")
+
         game["team"].append(user.name)
         game["inventory"][user.name] = {"Weapon": None, "Armor": None, "Potion": None}
         game["gold"][user.name] = 0
-        game["team_data"][user.name.lower()] = self.default_player_data()
+        game["team_data"][user.name] = self.default_player_data()
+
+        # Check if player was actually added to `team_data`
+        print(f"Updated team_data: {game['team_data'].keys()}")
+
         embed = discord.Embed(
             title="New Player Joined! 🎉",
             description=f"{user.name} has joined the adventure!",
