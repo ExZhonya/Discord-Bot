@@ -63,11 +63,13 @@ class GameMenu(View):
         return discord.Embed(title="Shop Menu", description="Choose a category:", color=discord.Color.purple())
     
     def build_character_embed(self, player_name):
-        player_data = self.game["team_data"].get(player_name, {"class": "None", "stats": {}})
+        team_data = self.game.get("team_data", {})
+        player_data = team_data.get(player_name, {"class": "None", "stats": {}})
         stats = player_data.get("stats", {})
+        player_class = player_data.get("class") or "None"
         embed = discord.Embed(title=f"Character Sheet", color=discord.Color.gold())
         embed.add_field(name="Name", value=f"<@{player_name}>", inline=False)
-        embed.add_field(name="Class", value=player_data.get("class", "None").capitalize() or "None", inline=False)
+        embed.add_field(name="Class", value=player_class.capitalize(), inline=False)
         embed.add_field(name="HP", value=stats.get("HP", 0))
         embed.add_field(name="MP", value=stats.get("MP", 0))
         embed.add_field(name="Str", value=stats.get("Str", 0))
