@@ -24,6 +24,7 @@ class CharacterManagement(commands.Cog):
     async def addstats(self, ctx, member: discord.Member = None, stat: str = None, amount: int = None):
         guild_id = ctx.guild.id
         game = self.game_manager.get_game(guild_id)
+        print(f"Game state in addstats for {guild_id}: {game}")
         caller = ctx.author
 
         if game["visibility"] == "public" and not caller.guild_permissions.administrator:
