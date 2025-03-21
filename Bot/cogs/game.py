@@ -22,6 +22,21 @@ class Game(commands.Cog):
                 "visibility": None  # New key: "public" or "private"
             }
         return self.games[guild_id]
+    
+    def default_player_data(self):
+        return {
+            "class": None,
+            "stats": {
+                "HP": 100,
+                "MP": 50,
+                "Str": 1,
+                "Int": 1,
+                "Def": 1,
+                "Dex": 1,
+                "StatPoints": 1,
+                "EXP": 0
+            }
+        }
 
     @app_commands.command(name="game", description="Start a new game session.")
     @app_commands.choices(visibility=[

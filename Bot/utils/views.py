@@ -77,20 +77,6 @@ class GameMenu(View):
         embed.add_field(name="Stats Available", value=stats.get("StatPoints", 0))
         return embed
     
-    def default_player_data(self):
-        return {
-            "class": None,
-            "stats": {
-                "HP": 100,
-                "MP": 50,
-                "Str": 1,
-                "Int": 1,
-                "Def": 1,
-                "Dex": 1,
-                "StatPoints": 1,
-                "EXP": 0
-            }
-        }
 
 
 class NextStageButton(View):
