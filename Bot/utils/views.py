@@ -76,6 +76,21 @@ class GameMenu(View):
         embed.add_field(name="Dex", value=stats.get("Dex", 0))
         embed.add_field(name="Stats Available", value=stats.get("StatPoints", 0))
         return embed
+    
+    def default_player_data(self):
+        return {
+            "class": None,
+            "stats": {
+                "HP": 100,
+                "MP": 50,
+                "Str": 1,
+                "Int": 1,
+                "Def": 1,
+                "Dex": 1,
+                "StatPoints": 1,
+                "EXP": 0
+            }
+        }
 
 
 class NextStageButton(View):
@@ -385,7 +400,7 @@ class CharacterSelect(Select):
         return embed
 
     def build_stats_embed(self):
-        stats = self.game["team_data"][self.player_name]["stats"]
+        stats = self.game.get("team_data", {}).get(self.player_name, {}).get("stats", {})
         embed = discord.Embed(title=f"{self.player_name}'s Stats", color=discord.Color.teal())
         embed.add_field(name="HP", value=stats["HP"])
         embed.add_field(name="MP", value=stats["MP"])
