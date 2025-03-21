@@ -1,5 +1,5 @@
 # /cogs/game.py
-import discord, os, json
+import discord
 from discord.ext import commands
 from discord import app_commands
 from utils.views import GameMenu
@@ -10,28 +10,7 @@ class Game(commands.Cog):
         self.games = {}
 
     def get_game(self, guild_id):
-        """Loads the game data from a file to ensure persistence."""
-        file_path = "data/game_data.json"
-
-        # Ensure "data/" directory exists
-        if not os.path.exists("data"):
-            os.makedirs("data")
-
-        # Load existing game data or create a new file
-        if os.path.exists(file_path):
-            with open(file_path, "r") as f:
-                try:
-                    self.games = json.load(f)
-                except json.JSONDecodeError:
-                    self.games = {}  # Reset if file is corrupted
-        else:
-            self.games = {}
-            with open(file_path, "w") as f:
-                json.dump({}, f)  # Create an empty game_data.json
-
-        # Ensure guild_id has a game state
         if guild_id not in self.games:
-            print(f"⚠️ get_game() is creating a new game state for {guild_id}!")  
             self.games[guild_id] = {
                 "active": False,
                 "team": [],
@@ -40,9 +19,8 @@ class Game(commands.Cog):
                 "gold": {},
                 "team_data": {},
                 "has_started": False,
-                "visibility": None  
+                "visibility": None  # New key: "public" or "private"
             }
-
         return self.games[guild_id]
     
     def default_player_data(self):
@@ -165,25 +143,12 @@ class Game(commands.Cog):
     async def join_slash(self, interaction: discord.Interaction):
         await self.join_game(interaction.guild.id, interaction.user, interaction)
 
-    def save_game(self):
-        """Saves the current game state to a file."""
-        file_path = "data/game_data.json"
+    @commands.command()
+    async def join(self, ctx):
+        await self.join_game(ctx.guild.id, ctx.author, ctx)
 
-        # Ensure "data/" directory exists
-        if not os.path.exists("data"):
-            os.makedirs("data")
-
-        with open(file_path, "w") as f:
-            json.dump(self.games, f, indent=4)
-
-    @commands.command(name="join")  
-    async def join(self, ctx):  # ✅ Proper `.join` command
-        await self.join_game(ctx.guild.id, ctx.author, ctx)  # ✅ Calls `join_game()` with the correct arguments
-
-    
     async def join_game(self, guild_id, user, interaction_or_ctx):
         game = self.get_game(guild_id)
-
         if not game["active"]:
             await self._send(interaction_or_ctx, "No active game! Use `/game` or `.game` first.")
             return
@@ -193,14 +158,10 @@ class Game(commands.Cog):
         if user.name in game["team"]:
             await self._send(interaction_or_ctx, f"{user.name}, you are already in the team!")
             return
-
         game["team"].append(user.name)
         game["inventory"][user.name] = {"Weapon": None, "Armor": None, "Potion": None}
         game["gold"][user.name] = 0
-        game["team_data"][user.name] = self.default_player_data()
-
-        self.save_game()  # Save after updating
-
+        game["team_data"][user.name.lower()] = self.default_player_data()
         embed = discord.Embed(
             title="New Player Joined! 🎉",
             description=f"{user.name} has joined the adventure!",
@@ -292,31 +253,14 @@ class Game(commands.Cog):
 
     async def end_game(self, guild_id, user, interaction_or_ctx):
         game = self.get_game(guild_id)
-
         if not game["active"]:
             await self._send(interaction_or_ctx, "There is no active game to end.")
             return
         if user.name != game["host"]:
             await self._send(interaction_or_ctx, "Only the host can end the game!")
             return
-
-        # Remove game data from memory
-        if guild_id in self.games:
-            self.games.pop(guild_id)
-
-        # Delete saved game data file (optional: reset instead of delete)
-        file_path = "data/game_data.json"
-        if os.path.exists(file_path):
-            with open(file_path, "w") as f:
-                json.dump({}, f, indent=4)  # Resets the file with an empty dictionary
-
-        self.games = {}
-
-        await self._send(interaction_or_ctx, embed=discord.Embed(
-            title="Game Ended",
-            description="The game session has been concluded.",
-            color=discord.Color.red()
-        ))
+        self.games.pop(guild_id)
+        await self._send(interaction_or_ctx, embed=discord.Embed(title="Game Ended", description="The game session has been concluded.", color=discord.Color.red()))
 
     async def _send(self, ctx_or_interaction, content=None, embed=None, view=None):
         if isinstance(ctx_or_interaction, discord.Interaction):
