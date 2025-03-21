@@ -176,7 +176,11 @@ class Game(commands.Cog):
         with open(file_path, "w") as f:
             json.dump(self.games, f, indent=4)
 
-    @commands.command(name="join")
+    @commands.command(name="join")  
+    async def join(self, ctx):  # ✅ Proper `.join` command
+        await self.join_game(ctx.guild.id, ctx.author, ctx)  # ✅ Calls `join_game()` with the correct arguments
+
+    
     async def join_game(self, guild_id, user, interaction_or_ctx):
         game = self.get_game(guild_id)
 
