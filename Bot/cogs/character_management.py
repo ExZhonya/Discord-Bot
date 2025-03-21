@@ -36,6 +36,9 @@ class CharacterManagement(commands.Cog):
 
         player_data = game["team_data"].get(member.name)
         if not player_data:
+            print("All stored players:", game["team_data"].keys())  # Check stored usernames
+            print("Target player name:", member.name)  # Check how Discord sees the username
+
             return await ctx.send("❌ Player not found in game.")
 
         if player_data["stats"]["StatPoints"] < amount:

@@ -161,7 +161,7 @@ class Game(commands.Cog):
         game["team"].append(user.name)
         game["inventory"][user.name] = {"Weapon": None, "Armor": None, "Potion": None}
         game["gold"][user.name] = 0
-        game["team_data"][user.name] = self.default_player_data()
+        game["team_data"][user.name.lower()] = self.default_player_data()
         embed = discord.Embed(
             title="New Player Joined! 🎉",
             description=f"{user.name} has joined the adventure!",
