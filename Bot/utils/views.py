@@ -71,11 +71,11 @@ class GameMenu(View):
         embed.add_field(name="Name", value=f"<@{player_name}>", inline=False)
         embed.add_field(name="Class", value=player_class.capitalize(), inline=False)
         embed.add_field(name="HP", value=stats.get("HP", 0), inline=False)
-        embed.add_field(name="MP", value=stats.get("MP", 0), inline=False)
+        embed.add_field(name="MP", value=stats.get("MP", 0))
         embed.add_field(name="Str", value=stats.get("Str", 0), inline=False)
-        embed.add_field(name="Int", value=stats.get("Int", 0), inline=False)
+        embed.add_field(name="Int", value=stats.get("Int", 0))
         embed.add_field(name="Def", value=stats.get("Def", 0), inline=False)
-        embed.add_field(name="Dex", value=stats.get("Dex", 0), inline=False)
+        embed.add_field(name="Dex", value=stats.get("Dex", 0))
         embed.add_field(name="Stats Available", value=stats.get("StatPoints", 0), inline=False)
         return embed
     
@@ -390,14 +390,14 @@ class CharacterSelect(Select):
     def build_stats_embed(self):
         stats = self.game.get("team_data", {}).get(self.player_name, {}).get("stats", {})
         embed = discord.Embed(title=f"{self.player_name}'s Stats", color=discord.Color.teal())
-        embed.add_field(name="HP", value=stats["HP"])
-        embed.add_field(name="MP", value=stats["MP"])
-        embed.add_field(name="Str", value=f"{stats['Str']} (+Physical DMG)")
-        embed.add_field(name="Int", value=f"{stats['Int']} (+Magic DMG)")
-        embed.add_field(name="Def", value=f"{stats['Def']} (Reduces Damage)")
-        embed.add_field(name="Dex", value=f"{stats['Dex']} (+Accuracy, +Dodge)")
-        embed.add_field(name="Stat Points Available", value=stats["StatPoints"])
-        embed.add_field(name="EXP", value=f"{stats['EXP']}%")
+        embed.add_field(name="HP", value=stats["HP"], inline=False)
+        embed.add_field(name="MP", value=stats["MP"], inline=False)
+        embed.add_field(name="Str", value=f"{stats['Str']} (+Physical DMG)", inline=False)
+        embed.add_field(name="Int", value=f"{stats['Int']} (+Magic DMG)",)
+        embed.add_field(name="Def", value=f"{stats['Def']} (Reduces Damage)", inline=False)
+        embed.add_field(name="Dex", value=f"{stats['Dex']} (+Accuracy, +Dodge)",)
+        embed.add_field(name="Stat Points Available", value=stats["StatPoints"], inline=False)
+        embed.add_field(name="EXP", value=f"{stats['EXP']}%", inline=False)
         return embed
 
 
