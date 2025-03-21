@@ -23,8 +23,14 @@ class CharacterManagement(commands.Cog):
     @commands.command()
     async def addstats(self, ctx, member: discord.Member = None, stat: str = None, amount: int = None):
         guild_id = ctx.guild.id
-        game = self.game_manager.get_game(guild_id)
-        print(f"Game state in addstats for {guild_id}: {game}")
+
+        # Reload game data from file before making changes
+        self.get_game(guild_id)
+
+        game = self.games[guild_id]  # Ensure we're using the latest data
+
+        print(f"Game state in addstats for {guild_id}: {game}")  # Debug print
+
         caller = ctx.author
 
         if game["visibility"] == "public" and not caller.guild_permissions.administrator:
@@ -35,11 +41,10 @@ class CharacterManagement(commands.Cog):
         if not member or not stat or amount is None:
             return await ctx.send("Usage: `.addstats @user stat amount`.")
 
+        print(f"Checking team_data inside addstats: {game['team_data'].keys()}")  # Debug
+
         player_data = game["team_data"].get(member.name)
         if not player_data:
-            print("All stored players:", game["team_data"].keys())  # Check stored usernames
-            print("Target player name:", member.name)  # Check how Discord sees the username
-
             return await ctx.send("❌ Player not found in game.")
 
         if player_data["stats"]["StatPoints"] < amount:
@@ -51,7 +56,12 @@ class CharacterManagement(commands.Cog):
         player_data["stats"][stat.capitalize()] += amount
         player_data["stats"]["StatPoints"] -= amount
 
+        # Save updated stats
+        self.save_game()
+
         await ctx.send(f"✅ Added {amount} {stat.capitalize()} to {member.name}.")
+
+
 
     @commands.command()
     async def setclass(self, ctx, member: discord.Member = None, class_name: str = None):
