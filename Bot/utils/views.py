@@ -70,13 +70,13 @@ class GameMenu(View):
         embed = discord.Embed(title=f"Character Sheet", color=discord.Color.gold())
         embed.add_field(name="Name", value=f"<@{player_name}>", inline=False)
         embed.add_field(name="Class", value=player_class.capitalize(), inline=False)
-        embed.add_field(name="HP", value=stats.get("HP", 0))
-        embed.add_field(name="MP", value=stats.get("MP", 0))
-        embed.add_field(name="Str", value=stats.get("Str", 0))
-        embed.add_field(name="Int", value=stats.get("Int", 0))
-        embed.add_field(name="Def", value=stats.get("Def", 0))
-        embed.add_field(name="Dex", value=stats.get("Dex", 0))
-        embed.add_field(name="Stats Available", value=stats.get("StatPoints", 0))
+        embed.add_field(name="HP", value=stats.get("HP", 0), inline=False)
+        embed.add_field(name="MP", value=stats.get("MP", 0), inline=False)
+        embed.add_field(name="Str", value=stats.get("Str", 0), inline=False)
+        embed.add_field(name="Int", value=stats.get("Int", 0), inline=False)
+        embed.add_field(name="Def", value=stats.get("Def", 0), inline=False)
+        embed.add_field(name="Dex", value=stats.get("Dex", 0), inline=False)
+        embed.add_field(name="Stats Available", value=stats.get("StatPoints", 0), inline=False)
         return embed
     
 
