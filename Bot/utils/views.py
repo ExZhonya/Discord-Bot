@@ -43,11 +43,11 @@ class GameMenu(View):
     @discord.ui.button(label="🧙 Character", style=discord.ButtonStyle.primary)
     async def character_button(self, interaction: discord.Interaction, button: Button):
         if interaction.user.name != self.game["host"]:
-            await interaction.response.send_message("Only the host can view character menus!", ephemeral=True)
+            await interaction.response.send_message("Only the host can view character sheets!", ephemeral=True)
             return
         await interaction.message.delete()
         for player in self.game["team"]:
-            await interaction.channel.send(f":video_game: **{player}'s Menu**", view=PlayerMenu(player, self.game))
+            await interaction.channel.send(embed=self.build_character_embed(player), view=CharacterMenu(player, self.game))
 
     def build_inventory_embed(self):
         embed = discord.Embed(title="Inventory List", color=discord.Color.blue())

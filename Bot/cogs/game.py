@@ -17,6 +17,7 @@ class Game(commands.Cog):
                 "host": None,
                 "inventory": {},
                 "gold": {},
+                "team_data": {},
                 "has_started": False,
                 "visibility": None  # New key: "public" or "private"
             }
@@ -50,6 +51,7 @@ class Game(commands.Cog):
             "host": user.name,
             "inventory": {user.name: {"Weapon": None, "Armor": None, "Potion": None}},
             "gold": {user.name: 0},
+            "team_data": {user.name: self.default_player_data()},
             "has_started": False,
             "visibility": visibility
         })
@@ -144,6 +146,7 @@ class Game(commands.Cog):
         game["team"].append(user.name)
         game["inventory"][user.name] = {"Weapon": None, "Armor": None, "Potion": None}
         game["gold"][user.name] = 0
+        game["team_data"][user.name] = self.default_player_data()
         embed = discord.Embed(
             title="New Player Joined! 🎉",
             description=f"{user.name} has joined the adventure!",
