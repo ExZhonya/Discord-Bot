@@ -57,7 +57,7 @@ class Events(commands.Cog):
             rules_channel = self.bot.get_channel(rules_channel_id)
             if rules_channel:
                 msg = await rules_channel.send(f"📜 {member.mention}, please read the rules!")
-                await msg.delete(delay=10)
+                await msg.delete(delay=1)
 
 
     @commands.Cog.listener()
