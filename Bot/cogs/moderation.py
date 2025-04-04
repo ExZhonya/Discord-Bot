@@ -212,7 +212,7 @@ class Moderation(commands.Cog):
             )
             embed.add_field(name="User", value=f"{member} | {member.mention}", inline=False)
             embed.add_field(name="Mod", value=f"{ctx.author} | {ctx.author.mention}", inline=False)
-            embed.add_field(name="Duration", value=f"<t:{now}:F>{f' | Expires: {duration}' if duration else ''}", inline=False)
+            embed.add_field(name="Time/Duration", value=f"<t:{now}:F>{f' | Expires: {duration}' if duration else ''}", inline=False)
             embed.add_field(name="Reason", value=reason, inline=False)
             await list_channel.send(embed=embed)
 
