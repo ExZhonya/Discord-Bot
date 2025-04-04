@@ -82,7 +82,7 @@ class Moderation(commands.Cog):
             await ctx.send(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!")
 
     @commands.command()
-    async def say(ctx, *, message: str):
+    async def say(self, ctx, *, message: str):
         embed = discord.Embed(
             description=message,
             color=discord.Color.blue()
