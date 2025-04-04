@@ -69,23 +69,12 @@ class Moderation(commands.Cog):
             await ctx.send(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!")
 
     @commands.command()
-    async def rules(self, ctx):
-        if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send("You need the 'Manage Server' permission to use this command!")
-            return
-
-        rules_channel_id = await get_channel_id(self.bot, ctx.guild.id, "rules_channel")
-        if ctx.channel.id == rules_channel_id:
-            embed = discord.Embed(
-                title="Server Rules",
-                color=discord.Color.blue()
-            )
-            embed.add_field(name="1. Respect everyone", value="Be respectful towards everyone.", inline=False)
-            embed.add_field(name="2. No slurs", value="Do not use slurs or anything similar towards others.", inline=False)
-            embed.add_field(name="3. Love the owner.", value="Because i say so.", inline=False)
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send(f"⚠️ Use this command in <#{rules_channel_id}>!", delete_after= 5)
+    async def say(ctx, *, message: str):
+        embed = discord.Embed(
+            description=message,
+            color=discord.Color.blue()
+        )
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def welcomepreview(self, ctx):
