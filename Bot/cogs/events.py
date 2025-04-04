@@ -13,6 +13,16 @@ class Events(commands.Cog):
         guild = member.guild
         guild_id = guild.id
 
+        # Get autoroles
+        role_ids = await get_autoroles(self.bot, member.guild.id)
+        roles = [member.guild.get_role(rid) for rid in role_ids]
+        roles = [r for r in roles if r is not None]
+        try:
+            await member.add_roles(*roles)
+        except Exception as e:
+            print(f"⚠️ Could not assign autoroles to {member.name}: {e}")
+
+        # Send welcome message
         welcome_channel_id = await get_channel_id(self.bot, guild_id, "welcome_channel")
         rules_channel_id = await get_channel_id(self.bot, guild_id, "rules_channel")
         roles_channel_id = await get_channel_id(self.bot, guild_id, "role_channel")
@@ -49,6 +59,7 @@ class Events(commands.Cog):
                 msg = await rules_channel.send(f"📜 {member.mention}, please read the rules!")
                 await msg.delete(delay=10)
 
+
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         channel = guild.system_channel
@@ -71,16 +82,6 @@ class Events(commands.Cog):
             embed.set_thumbnail(url=self.bot.user.avatar.url)
             embed.set_footer(text="\nThanks for choosing Yuuki!", icon_url=self.bot.user.avatar.url)
             await channel.send(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        role_ids = await get_autoroles(self.bot, member.guild.id)
-        roles = [member.guild.get_role(rid) for rid in role_ids]
-        roles = [r for r in roles if r is not None]
-        try:
-            await member.add_roles(*roles)
-        except Exception as e:
-            print(f"⚠️ Could not assign autoroles to {member.name}: {e}")
 
 async def setup(bot):
     await bot.add_cog(Events(bot))
