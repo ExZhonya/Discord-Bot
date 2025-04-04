@@ -47,7 +47,7 @@ class Moderation(commands.Cog):
 
 # ---------------- Text Commands ----------------
     @commands.command()
-    async def setchannel(self, ctx, channel_type: str, *, channel: discord.TextChannel, channel_or_value: str):
+    async def setchannel(self, ctx, channel_type: str, *, channel_or_value: str):
         if not ctx.author.guild_permissions.manage_guild:
             await ctx.send("❌ You need manage server permissions!", delete_after=3)
             return
@@ -55,6 +55,7 @@ class Moderation(commands.Cog):
         if channel_type.lower() not in ["welcome", "rules", "heartbeat", "role", "introduction", "log", "list"]:
             await ctx.send("❌ Invalid type! Use `welcome`, `rules`, `heartbeat`, `role`, `introduction`, `log`, or `list`.", delete_after=3)
             return
+        
 
         channel_type = "role" if channel_type.lower() in ["role", "roles"] else channel_type.lower()
         column_name = f"{channel_type.lower()}_channel"
