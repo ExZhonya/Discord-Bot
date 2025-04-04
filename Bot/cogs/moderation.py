@@ -71,6 +71,10 @@ class Moderation(commands.Cog):
 
     @commands.command()
     async def say(self, ctx, *, message: str):
+        if not ctx.author.guild_permissions.manage_messages:
+            await ctx.send("❌ You need manage message permissions!", delete_after=3)
+            return
+        
         lines = message.splitlines()
         content = {"title": "", "description": "", "footer": ""}
         current_key = None
