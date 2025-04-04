@@ -129,7 +129,7 @@ class Moderation(commands.Cog):
             f"{rules_text}\n\n"
             f"{roles_text}\n\n"
             f"{intro_text}\n\n"
-            f"Enjoy your stay! If you have any questions, feel free to ask. | Today at <t:{unix_ts}:R>"
+            f"Enjoy your stay! If you have any questions, feel free to ask. | Today at <t:{unix_ts}:t>"
         )
 
         embed = discord.Embed(
