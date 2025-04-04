@@ -31,7 +31,8 @@ class Events(commands.Cog):
         if welcome_channel_id:
             welcome_channel = self.bot.get_channel(welcome_channel_id)
             if welcome_channel:
-                current_time = discord.utils.utcnow().strftime("%I:%M %p")
+                now = utcnow()
+                unix_ts = int(now.timestamp())
 
                 rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "<a:exclamation:1350752095720177684> Read the rules in the rules channel."
                 roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "<a:exclamation:1350752095720177684> Get yourself a role in the roles channel."
@@ -45,12 +46,11 @@ class Events(commands.Cog):
                                 f"{roles_text}\n\n"
                                 f"{intro_text}\n\n"
                                 f"**Start having fun!** 🎉\n\n"
-                                f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {current_time}",
+                                f"Enjoy your stay! If you have any questions, feel free to ask. | Today at <t:{unix_ts}:t>",
                     color=discord.Color.green()
                 )
                 embed.set_author(name=guild.name, icon_url=guild.icon.url if guild.icon else None)
                 embed.set_thumbnail(url=member.display_avatar.url)
-                embed.set_footer(text=f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {current_time}")
 
                 await welcome_channel.send(embed=embed)
 
