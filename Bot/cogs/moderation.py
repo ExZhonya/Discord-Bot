@@ -117,7 +117,7 @@ class Moderation(commands.Cog):
         introduction_channel_id = await get_channel_id(self.bot, guild_id, "introduction_channel")
 
         now = utcnow()
-        time_str = now.strftime("%I:%M %p UTC")  # "Today at" is added manually below
+        unix_ts = int(now.timestamp())  # "Today at" is added manually below
 
         rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "<a:exclamation:1350752095720177684> Read the rules in the rules channel."
         roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "<a:exclamation:1350752095720177684> Get yourself a role in the roles channel."
@@ -129,7 +129,7 @@ class Moderation(commands.Cog):
             f"{rules_text}\n\n"
             f"{roles_text}\n\n"
             f"{intro_text}\n\n"
-            f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {time_str}"
+            f"Enjoy your stay! If you have any questions, feel free to ask. | Today at <t:{unix_ts}:R>"
         )
 
         embed = discord.Embed(
