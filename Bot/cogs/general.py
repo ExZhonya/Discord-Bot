@@ -14,7 +14,7 @@ class General(commands.Cog):
         await ctx.send(f"🏓 Pong! Latency: {round(self.bot.latency * 1000)}ms")
 
     @commands.command()
-    async def info(self, ctx):
+    async def serverinfo(self, ctx):
         guild = ctx.guild
         embed = discord.Embed(title=f"📌 Server Info - {guild.name}", color=discord.Color.green())
         embed.add_field(name="Owner", value=guild.owner, inline=False)
@@ -38,7 +38,7 @@ class General(commands.Cog):
         )
         embed.add_field(name=".help", value="Displays this help menu.", inline=False)
         embed.add_field(name=".ping", value="Checks the bot's latency.", inline=False)
-        embed.add_field(name=".info", value="Provides server information.", inline=False)
+        embed.add_field(name=".serverinfo", value="Provides server information.", inline=False)
         embed.add_field(name=".gamehelp", value="List of Game's commands.", inline=False)
         embed.add_field(name=".modhelp", value="List of admin's commands help.", inline=False)
         embed.add_field(name=".giveaway", value="To create a Giveaway.", inline=False)
