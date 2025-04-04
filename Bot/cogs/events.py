@@ -44,7 +44,8 @@ class Events(commands.Cog):
                                 f"{rules_text}\n\n"
                                 f"{roles_text}\n\n"
                                 f"{intro_text}\n\n"
-                                f"**Start having fun!** 🎉\n\n",
+                                f"**Start having fun!** 🎉\n\n"
+                                f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {current_time}",
                     color=discord.Color.green()
                 )
                 embed.set_author(name=guild.name, icon_url=guild.icon.url if guild.icon else None)

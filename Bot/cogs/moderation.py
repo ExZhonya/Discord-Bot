@@ -3,6 +3,7 @@ import discord, time, re, asyncio
 from discord.ext import commands
 from discord import app_commands
 from discord.ui import View, Button
+from discord.utils import utcnow
 from db.database import get_channel_id, set_channel_id, remove_channel_id, ensure_guild_exists, log_infraction, get_infractions
 from db.database import add_autorole, remove_autorole, get_autoroles
 
@@ -103,7 +104,7 @@ class Moderation(commands.Cog):
     @commands.command()
     async def welcomepreview(self, ctx):
         if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send("You need the 'Manage Server' permission to use this command!", delete_after = 5)
+            await ctx.send("You need the 'Manage Server' permission to use this command!", delete_after=5)
             return
 
         guild = ctx.guild
@@ -115,26 +116,33 @@ class Moderation(commands.Cog):
         roles_channel_id = await get_channel_id(self.bot, guild_id, "role_channel")
         introduction_channel_id = await get_channel_id(self.bot, guild_id, "introduction_channel")
 
-        current_time = discord.utils.utcnow().strftime("%I:%M %p")
+        now = utcnow()
+        time_str = now.strftime("%I:%M %p UTC")  # "Today at" is added manually below
+
         rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "<a:exclamation:1350752095720177684> Read the rules in the rules channel."
         roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "<a:exclamation:1350752095720177684> Get yourself a role in the roles channel."
         intro_text = f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "<a:exclamation:1350752095720177684> Introduce yourself in the introduction channel."
 
+        description_text = (
+            f"We're excited to see you here!\n\n"
+            f"`Welcome to {guild.name}`\n\n"
+            f"{rules_text}\n\n"
+            f"{roles_text}\n\n"
+            f"{intro_text}\n\n"
+            f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {time_str}"
+        )
+
         embed = discord.Embed(
             title=f"👋 Welcome, {member.name}!",
-            description=f"We're excited to see you here!\n\n"
-                        f"`Welcome to {guild.name}`\n\n"
-                        f"{rules_text}\n\n"
-                        f"{roles_text}\n\n"
-                        f"{intro_text}\n\n",
+            description=description_text,
             color=discord.Color.green()
         )
 
         embed.set_author(name=guild.name, icon_url=guild.icon.url if guild.icon else None)
         embed.set_thumbnail(url=member.display_avatar.url)
-        embed.set_footer(text=f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {current_time}")
 
         await ctx.send(embed=embed)
+
 
 
     @commands.command()
