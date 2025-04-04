@@ -82,23 +82,33 @@ class Moderation(commands.Cog):
             await set_channel_id(self.bot, guild_id, column_name, channel.id)
             await ctx.send(f"✅ {channel_type.capitalize()} channel set to {channel.mention}!")
 
+from discord.ext import commands
+import discord
+
+class YourCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
     @commands.command()
     async def say(self, ctx, *, message: str):
-        # Parse fields from the message
         lines = message.splitlines()
-        content = {"title": None, "description": None, "footer": None}
+        content = {"title": "", "description": "", "footer": ""}
+        current_key = None
 
         for line in lines:
-            if ':' in line:
+            # If the line defines a new field
+            if ':' in line and line.split(':', 1)[0].lower() in content:
                 key, value = line.split(':', 1)
-                key = key.strip().lower()
-                value = value.strip()
-                if key in content:
-                    content[key] = value
+                current_key = key.strip().lower()
+                content[current_key] = value.strip()
+            elif current_key:
+                # This line is a continuation of the previous key
+                content[current_key] += '\n' + line.strip()
 
+        # Create the embed
         embed = discord.Embed(
-            title=content["title"],
-            description=content["description"],
+            title=content["title"] or None,
+            description=content["description"] or None,
             color=discord.Color.blue()
         )
 
@@ -106,6 +116,7 @@ class Moderation(commands.Cog):
             embed.set_footer(text=content["footer"])
 
         await ctx.send(embed=embed)
+
 
     @commands.command()
     async def welcomepreview(self, ctx):
