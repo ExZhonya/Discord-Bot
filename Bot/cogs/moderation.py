@@ -22,8 +22,7 @@ class Moderation(commands.Cog):
         app_commands.Choice(name="Heartbeat", value="heartbeat"),
         app_commands.Choice(name="Role", value="role"),
         app_commands.Choice(name="Introduction", value="introduction"),
-        app_commands.Choice(name="Mod Log", value="log"),
-        app_commands.Choice(name="Infractions List", value="list")
+        app_commands.Choice(name="Infractions Log", value="list")
     ])
     async def setchannel_slash(self, interaction: discord.Interaction, 
                             channel_type: app_commands.Choice[str], 
