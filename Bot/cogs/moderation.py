@@ -83,10 +83,27 @@ class Moderation(commands.Cog):
 
     @commands.command()
     async def say(self, ctx, *, message: str):
+        # Parse fields from the message
+        lines = message.splitlines()
+        content = {"title": None, "description": None, "footer": None}
+
+        for line in lines:
+            if ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip().lower()
+                value = value.strip()
+                if key in content:
+                    content[key] = value
+
         embed = discord.Embed(
-            description=message,
+            title=content["title"],
+            description=content["description"],
             color=discord.Color.blue()
         )
+
+        if content["footer"]:
+            embed.set_footer(text=content["footer"])
+
         await ctx.send(embed=embed)
 
     @commands.command()
