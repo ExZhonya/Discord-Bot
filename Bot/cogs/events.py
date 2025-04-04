@@ -7,67 +7,46 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-@commands.Cog.listener()
-async def on_member_join(self, member):
-    guild = member.guild
-    guild_id = guild.id
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        guild = member.guild
+        guild_id = guild.id
 
-    welcome_channel_id = await get_channel_id(self.bot, guild_id, "welcome_channel")
-    rules_channel_id = await get_channel_id(self.bot, guild_id, "rules_channel")
-    roles_channel_id = await get_channel_id(self.bot, guild_id, "role_channel")
-    introduction_channel_id = await get_channel_id(self.bot, guild_id, "introduction_channel")
+        welcome_channel_id = await get_channel_id(self.bot, guild_id, "welcome_channel")
+        rules_channel_id = await get_channel_id(self.bot, guild_id, "rules_channel")
+        roles_channel_id = await get_channel_id(self.bot, guild_id, "role_channel")
+        introduction_channel_id = await get_channel_id(self.bot, guild_id, "introduction_channel")
 
-    if welcome_channel_id:
-        welcome_channel = self.bot.get_channel(int(welcome_channel_id)) if str(welcome_channel_id).isdigit() else None
-        if welcome_channel:
-            current_time = discord.utils.utcnow().strftime("%I:%M %p")
+        if welcome_channel_id:
+            welcome_channel = self.bot.get_channel(welcome_channel_id)
+            if welcome_channel:
+                current_time = discord.utils.utcnow().strftime("%I:%M %p")
 
-            # Rules
-            rules_text = (
-                f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>"
-                if rules_channel_id else
-                "<a:exclamation:1350752095720177684> Read the rules in the rules channel."
-            )
+                rules_text = f"<a:exclamation:1350752095720177684> Read the rules in <#{rules_channel_id}>" if rules_channel_id else "<a:exclamation:1350752095720177684> Read the rules in the rules channel."
+                roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>" if roles_channel_id else "<a:exclamation:1350752095720177684> Get yourself a role in the roles channel."
+                intro_text = f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>" if introduction_channel_id else "<a:exclamation:1350752095720177684> Introduce yourself in the introduction channel."
 
-            # Roles (handles "community" or real channel)
-            if roles_channel_id == "community":
-                roles_text = "<id:customize>"
-            elif roles_channel_id and str(roles_channel_id).isdigit():
-                roles_text = f"<a:exclamation:1350752095720177684> Get yourself a role on <#{roles_channel_id}>"
-            else:
-                roles_text = "<a:exclamation:1350752095720177684> Get yourself a role in the roles channel."
+                embed = discord.Embed(
+                    title=f"👋 Welcome, {member.name}!",
+                    description=f"We're excited to see you here!\n\n"
+                                f"`Welcome to {guild.name}`\n\n"
+                                f"{rules_text}\n\n"
+                                f"{roles_text}\n\n"
+                                f"{intro_text}\n\n"
+                                f"**Start having fun!** 🎉\n\n",
+                    color=discord.Color.green()
+                )
+                embed.set_author(name=guild.name, icon_url=guild.icon.url if guild.icon else None)
+                embed.set_thumbnail(url=member.display_avatar.url)
+                embed.set_footer(text=f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {current_time}")
 
-            # Introduction
-            intro_text = (
-                f"<a:exclamation:1350752095720177684> Introduce yourself in <#{introduction_channel_id}>"
-                if introduction_channel_id else
-                "<a:exclamation:1350752095720177684> Introduce yourself in the introduction channel."
-            )
+                await welcome_channel.send(embed=embed)
 
-            # Embed
-            embed = discord.Embed(
-                title=f"👋 Welcome, {member.name}!",
-                description=f"We're excited to see you here!\n\n"
-                            f"`Welcome to {guild.name}`\n\n"
-                            f"{rules_text}\n\n"
-                            f"{roles_text}\n\n"
-                            f"{intro_text}\n\n"
-                            f"**Start having fun!** 🎉\n\n",
-                color=discord.Color.green()
-            )
-            embed.set_author(name=guild.name, icon_url=guild.icon.url if guild.icon else None)
-            embed.set_thumbnail(url=member.display_avatar.url)
-            embed.set_footer(text=f"Enjoy your stay! If you have any questions, feel free to ask. | Today at {current_time}")
-
-            await welcome_channel.send(embed=embed)
-
-    # Optional reminder in rules channel
-    if rules_channel_id and str(rules_channel_id).isdigit():
-        rules_channel = self.bot.get_channel(int(rules_channel_id))
-        if rules_channel:
-            msg = await rules_channel.send(f"📜 {member.mention}, please read the rules!")
-            await msg.delete(delay=10)
-
+        if rules_channel_id:
+            rules_channel = self.bot.get_channel(rules_channel_id)
+            if rules_channel:
+                msg = await rules_channel.send(f"📜 {member.mention}, please read the rules!")
+                await msg.delete(delay=10)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
