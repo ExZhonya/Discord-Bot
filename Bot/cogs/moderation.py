@@ -47,7 +47,7 @@ class Moderation(commands.Cog):
 
 # ---------------- Text Commands ----------------
     @commands.command()
-    async def setchannel(self, ctx, channel_type: str, channel: discord.TextChannel):
+    async def setchannel(self, ctx, channel_type: str, *, channel: discord.TextChannel, channel_or_value: str):
         if not ctx.author.guild_permissions.manage_guild:
             await ctx.send("❌ You need manage server permissions!", delete_after=3)
             return
@@ -56,9 +56,22 @@ class Moderation(commands.Cog):
             await ctx.send("❌ Invalid type! Use `welcome`, `rules`, `heartbeat`, `role`, `introduction`, `log`, or `list`.", delete_after=3)
             return
 
+        channel_type = "role" if channel_type.lower() in ["role", "roles"] else channel_type.lower()
         column_name = f"{channel_type.lower()}_channel"
         guild_id = ctx.guild.id
         await ensure_guild_exists(self.bot, guild_id)
+        
+        """For Community's onboard function Channel&Roles"""
+        if channel_or_value.lower() == "community":
+            await set_channel_id(self.bot, guild_id, column_name, "community")
+            await ctx.send(f"✅ {channel_type.capitalize()} channel set to community mode (`<id:customize>`).")
+            return
+        """For Error Catch"""
+        try:
+            channel = await commands.TextChannelConverter().convert(ctx, channel_or_value)
+        except commands.BadArgument:
+            await ctx.send("❌ Invalid channel. Please mention a valid text channel or use `community`.", delete_after=3)
+            return
 
         current_channel_id = await get_channel_id(self.bot, guild_id, column_name)
         if current_channel_id == channel.id:
