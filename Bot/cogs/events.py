@@ -80,6 +80,7 @@ class Events(commands.Cog):
         try:
             await member.add_roles(*roles)
         except Exception as e:
+            print(f"⚠️ Could not assign autoroles to {member.name}: {e}")
 
 async def setup(bot):
     await bot.add_cog(Events(bot))
