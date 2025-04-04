@@ -2,6 +2,7 @@
 import discord
 from discord.ext import commands
 from db.database import get_channel_id
+from db.database import get_autoroles
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -61,15 +62,24 @@ class Events(commands.Cog):
             embed = discord.Embed(
                 description=(
                     f"**Thanks for adding me to your server! 🥰**\n\n"
-                    "To play game, simply type `/game` or `.game` followed with `private` or `public` session!\n\n"
+                    "Yuuki is an multi-purpose bot, that can assist you in moderation, in managing server, and more!\n\n"
                     "Want to see all of my command list? Then just do `.help` to see all of my available commands!\n\n"
-                    "If you have any questions or need assistance, feel free to join our [support server](https://discord.gg/Tfug7jMMRv)\n\n"
+                    "If you have any questions, suggestion and/or need assistance, feel free to join our [support server](https://discord.gg/Tfug7jMMRv)\n\n"
                 ),
                 color=discord.Color.pink()
             )
             embed.set_thumbnail(url=self.bot.user.avatar.url)
             embed.set_footer(text="\nThanks for choosing Yuuki!", icon_url=self.bot.user.avatar.url)
             await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        role_ids = await get_autoroles(self.bot, member.guild.id)
+        roles = [member.guild.get_role(rid) for rid in role_ids]
+        roles = [r for r in roles if r is not None]
+        try:
+            await member.add_roles(*roles)
+        except Exception as e:
 
 async def setup(bot):
     await bot.add_cog(Events(bot))

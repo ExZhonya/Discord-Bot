@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord import app_commands
 from discord.ui import View, Button
 from db.database import get_channel_id, set_channel_id, remove_channel_id, ensure_guild_exists, log_infraction, get_infractions
+from db.database import add_autorole, remove_autorole, get_autoroles
 
 class Moderation(commands.Cog):
     def __init__(self, bot):
@@ -327,6 +328,27 @@ class Moderation(commands.Cog):
         """, ctx.guild.id, member.id)
 
         await ctx.send(f"✅ Cleared all infractions for {member}.")
+
+    @commands.group(invoke_without_command=True)
+    async def autorole(self, ctx):
+        roles = await get_autoroles(self.bot, ctx.guild.id)
+        if not roles:
+            await ctx.send("ℹ️ No autoroles set.")
+            return
+        role_mentions = [ctx.guild.get_role(r).mention for r in roles if ctx.guild.get_role(r)]
+        await ctx.send("🔧 Current autoroles:\n" + "\n".join(role_mentions))
+
+    @autorole.command(name="add")
+    @commands.has_permissions(manage_roles=True)
+    async def autorole_add(self, ctx, role: discord.Role):
+        await add_autorole(self.bot, ctx.guild.id, role.id)
+        await ctx.send(f"✅ Added {role.mention} to autorole list.")
+
+    @autorole.command(name="remove")
+    @commands.has_permissions(manage_roles=True)
+    async def autorole_remove(self, ctx, role: discord.Role):
+        await remove_autorole(self.bot, ctx.guild.id, role.id)
+        await ctx.send(f"❌ Removed {role.mention} from autorole list.")
 
 
 async def setup(bot):

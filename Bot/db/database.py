@@ -21,6 +21,33 @@ async def init_db(bot):
         )
     """)
 
+    # Create autorole table
+    await bot.db.execute("""
+        CREATE TABLE IF NOT EXISTS autoroles (
+            guild_id BIGINT,
+            role_id BIGINT,
+            PRIMARY KEY (guild_id, role_id)
+        )
+    """)
+    async def add_autorole(bot, guild_id: int, role_id: int):
+        await bot.db.execute("""
+            INSERT INTO autoroles (guild_id, role_id)
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING
+        """, guild_id, role_id)
+
+    async def remove_autorole(bot, guild_id: int, role_id: int):
+        await bot.db.execute("""
+            DELETE FROM autoroles WHERE guild_id = $1 AND role_id = $2
+        """, guild_id, role_id)
+
+    async def get_autoroles(bot, guild_id: int):
+        rows = await bot.db.fetch("SELECT role_id FROM autoroles WHERE guild_id = $1", guild_id)
+        return [r["role_id"] for r in rows]
+
+
+
+
     # Dynamically add missing columns to channels table
     existing_cols = await bot.db.fetch("SELECT column_name FROM information_schema.columns WHERE table_name = 'channels'")
     existing_cols = [col['column_name'] for col in existing_cols]
