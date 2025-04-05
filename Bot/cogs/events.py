@@ -1,8 +1,10 @@
 # /cogs/events.py
 import discord
+from discord.utils import utcnow
 from discord.ext import commands
 from db.database import get_channel_id
 from db.database import get_autoroles
+
 
 class Events(commands.Cog):
     def __init__(self, bot):
