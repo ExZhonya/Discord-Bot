@@ -62,6 +62,28 @@ class Events(commands.Cog):
                 msg = await rules_channel.send(f"📜 {member.mention}, please read the rules!")
                 await msg.delete(delay=1)
 
+        @commands.Cog.listener()
+        async def on_member_remove(self, member):
+            guild = member.guild
+            guild_id = guild.id
+
+            # Get goodbye channel
+            goodbye_channel_id = await get_channel_id(self.bot, guild_id, "goodbye_channel")
+
+            if goodbye_channel_id:
+                goodbye_channel = self.bot.get_channel(goodbye_channel_id)
+                if goodbye_channel:
+
+                    embed = discord.Embed(
+                        title=f"👋 Farewell, {member.name}",
+                        description=f"{member.mention} has left **{guild.name}**.\n\n"
+                                    f"Thanks for being part of our community.\n"
+                                    f"Wish you the best wherever you go! ✨\n\n",
+                        color=discord.Color.red()
+                    )
+                    embed.set_thumbnail(url=member.display_avatar.url)
+
+                    await goodbye_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
