@@ -11,16 +11,16 @@ async def init_db(bot):
 
     # Auto create channels table
     await bot.db.execute("""
-        CREATE TABLE IF NOT EXISTS channels (
-            guild_id BIGINT PRIMARY KEY,
-            welcome_channel BIGINT DEFAULT NULL,
-            rules_channel BIGINT DEFAULT NULL,
-            heartbeat_channel BIGINT DEFAULT NULL,
-            role_channel BIGINT DEFAULT NULL,
-            introduction_channel BIGINT DEFAULT NULL,
-            goodbye_channel BIGINT DEFAULT NULL
-        )
-    """)
+    CREATE TABLE IF NOT EXISTS channels (
+        guild_id BIGINT PRIMARY KEY,
+        welcome_channel BIGINT DEFAULT NULL,
+        rules_channel BIGINT DEFAULT NULL,
+        heartbeat_channel BIGINT DEFAULT NULL,
+        role_channel BIGINT DEFAULT NULL,
+        introduction_channel BIGINT DEFAULT NULL,
+        goodbye_channel BIGINT DEFAULT NULL
+    )
+""")
 
     await bot.db.execute("""
     CREATE TABLE IF NOT EXISTS autoroles (
