@@ -17,7 +17,8 @@ async def init_db(bot):
             rules_channel BIGINT DEFAULT NULL,
             heartbeat_channel BIGINT DEFAULT NULL,
             role_channel BIGINT DEFAULT NULL,
-            introduction_channel BIGINT DEFAULT NULL
+            introduction_channel BIGINT DEFAULT NULL,
+            goodbye_channel BIGINT DEFAULT NULL
         )
     """)
 
