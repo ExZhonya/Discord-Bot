@@ -8,6 +8,42 @@ from discord.utils import utcnow, format_dt
 class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.bully_surdi_active = False
+        self.surdi_user_id = 609342457301303308
+
+    @commands.command()
+    async def bully(self, ctx, target: str = None, toggle: str = None):
+        excluded_user_id = 609342457301303308
+
+        if ctx.author.id == excluded_user_id:
+            await ctx.send("idih ngapain sur")
+            return
+    
+        if target and target.lower() == "surdi":
+            if toggle and toggle.lower() == "on":
+                self.bully_surdi_active = True
+                await ctx.send("👀 Bully Surdi is now **ON**.")
+            elif toggle and toggle.lower() == "off":
+                self.bully_surdi_active = False
+                await ctx.send("😇 Bully Surdi is now **OFF**.")
+            else:
+                await ctx.send("❓ Use `.bully surdi on` or `.bully surdi off`")
+        else:
+            await ctx.send("❓ Use `.bully surdi on` or `.bully surdi off`")
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+
+        if self.bully_surdi_active:
+            for user in message.mentions:
+                if user.id == self.surdi_user_id:
+                    await message.channel.send("sst gausah ping. surdi itu gay, kriminal wanita, narsis pula, mending jauh jauh deh")
+                    break
+
+
+
 
     @commands.command()
     async def ping(self, ctx):
