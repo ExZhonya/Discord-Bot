@@ -23,7 +23,8 @@ class Moderation(commands.Cog):
         app_commands.Choice(name="Heartbeat", value="heartbeat"),
         app_commands.Choice(name="Role", value="role"),
         app_commands.Choice(name="Introduction", value="introduction"),
-        app_commands.Choice(name="Infractions Log", value="list")
+        app_commands.Choice(name="Infractions Log", value="list"),
+        app_commands.Choice(name="Goodbye", value="goodbye")
     ])
     async def setchannel_slash(self, interaction: discord.Interaction, 
                             channel_type: app_commands.Choice[str], 
@@ -53,9 +54,10 @@ class Moderation(commands.Cog):
             await ctx.send("❌ You need manage server permissions!", delete_after=3)
             return
 
-        if channel_type.lower() not in ["welcome", "rules", "heartbeat", "role", "introduction", "log", "list"]:
-            await ctx.send("❌ Invalid type! Use `welcome`, `rules`, `heartbeat`, `role`, `introduction`, `log`, or `list`.", delete_after=3)
+        if channel_type.lower() not in ["welcome", "rules", "heartbeat", "role", "introduction", "log", "list", "goodbye"]:
+            await ctx.send("❌ Invalid type! Use `welcome`, `rules`, `heartbeat`, `role`, `introduction`, `log`, `list`, or `goodbye`.", delete_after=3)
             return
+
 
         column_name = f"{channel_type.lower()}_channel"
         guild_id = ctx.guild.id
