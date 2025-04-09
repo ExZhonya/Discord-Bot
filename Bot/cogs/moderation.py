@@ -341,7 +341,12 @@ class Moderation(commands.Cog):
         await ctx.send(f"✅ Cleared all infractions for {member}.")
 
     @commands.group(invoke_without_command=True)
-    async def autorole(self, ctx):
+    async def ar(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("ℹ️ Please specify a subcommand. `.ar list`, `.ar add` `.ar remove`")
+
+    @ar.command(name="list")
+    async def ar_list(self, ctx):
         roles = await get_autoroles(self.bot, ctx.guild.id)
         if not roles:
             await ctx.send("ℹ️ No autoroles set.")
@@ -349,13 +354,13 @@ class Moderation(commands.Cog):
         role_mentions = [ctx.guild.get_role(r).mention for r in roles if ctx.guild.get_role(r)]
         await ctx.send("🔧 Current autoroles:\n" + "\n".join(role_mentions))
 
-    @autorole.command(name="add")
+    @ar.command(name="add")
     @commands.has_permissions(manage_roles=True)
     async def autorole_add(self, ctx, role: discord.Role):
         await add_autorole(self.bot, ctx.guild.id, role.id)
         await ctx.send(f"✅ Added {role.mention} to autorole list.")
 
-    @autorole.command(name="remove")
+    @ar.command(name="remove")
     @commands.has_permissions(manage_roles=True)
     async def autorole_remove(self, ctx, role: discord.Role):
         await remove_autorole(self.bot, ctx.guild.id, role.id)

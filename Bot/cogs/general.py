@@ -56,7 +56,7 @@ class General(commands.Cog):
         embed.add_field(name=".mute", value="To mute a member.", inline=False)
         embed.add_field(name=".kick", value="To kick a member.", inline=False)
         embed.add_field(name=".ban", value="To ban a member.", inline=False)
-        embed.add_field(name=".autorole <add> or <remove>", value="To add or remove autorole", inline=False)
+        embed.add_field(name=".ar <add/remove/list>", value="To add, remove or see autorole list ", inline=False)
         embed.add_field(name=".say", value="To send a message using Bot's embed feature.", inline=False)
         await ctx.send(embed=embed)
 
