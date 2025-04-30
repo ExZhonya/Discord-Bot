@@ -26,6 +26,7 @@ class Moderation(commands.Cog):
         app_commands.Choice(name="Infractions Log", value="list"),
         app_commands.Choice(name="Goodbye", value="goodbye")
     ])
+
     async def setchannel_slash(self, interaction: discord.Interaction, 
                             channel_type: app_commands.Choice[str], 
                             channel: discord.TextChannel):
