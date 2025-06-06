@@ -3,12 +3,10 @@ import os
 import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
-from keep_alive import keep_alive
+from db import database
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-
-keep_alive()
 
 intents = discord.Intents.default()
 intents.members = True
@@ -32,5 +30,11 @@ async def setup_hook():
     ]:
         await bot.load_extension(cog)
     print("✅ All cogs loaded.")
+
+@bot.event
+async def on_ready():
+    await database.initialize()
+    print(f"Logged in as {bot.user}")
+
 
 bot.run(TOKEN)
