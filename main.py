@@ -35,8 +35,6 @@ async def setup_hook():
         "cogs.general",
         "cogs.moderation",
         "cogs.events",
-        "cogs.game",
-        "cogs.character_management"
     ]:
         await bot.load_extension(cog)
     print("✅ All cogs loaded.")
