@@ -47,7 +47,7 @@ class General(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
-        await ctx.send(f"🏓 \n Pong! Latency: `{round(self.bot.latency * 1000)}`ms")
+        await ctx.send(f"🏓 \n Pong! Latency: `{round(self.bot.latency * 1000)}`ams")
 
     @commands.command()
     async def serverinfo(self, ctx):
